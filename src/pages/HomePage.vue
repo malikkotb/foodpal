@@ -7,6 +7,11 @@
           <li class="breadcrumb-item active">Dashboard</li>
         </ol>
 
+        <h1>Get weight data in general and steps/exercise as well.</h1>
+        <h1>But the rest display only for the current day
+          , so only display the date of the current day by retrieving data
+          from firebase using today.getDate()
+        </h1>
         
         <!-- <div class="row">
           <div class="col-xl-6">

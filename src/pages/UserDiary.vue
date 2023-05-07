@@ -1,115 +1,472 @@
 <template>
-  <div>
-    <h3>User Dairy Page</h3>
-    <h4>Like dairy in the Food tracker app</h4>
-    
-    <br />
-
-    <div
-      id="carouselExampleDark"
-      class="carousel carousel-dark slide"
-      data-bs-ride="false"
-    >
-      <div ref="carousel" class="carousel-inner">
-        <!-- TODO: bind the :class to active if todays' date is that date -->
-        <!-- <div class="carousel-item active">
+  <!-- carousel -->
+  <div
+    id="carouselExampleDark"
+    class="carousel carousel-dark slide p-4"
+    data-bs-ride="false"
+    style="background-color: #F4F4F4"
+  >
+    <div ref="carousel" class="carousel-inner">
+      <!-- TODO: bind the :class to active if todays' date is that date -->
+      <!-- <div class="carousel-item active">
           <h5>Today 2. May 23</h5>
           <p>Some representative placeholder content for the second slide.</p>
         </div> -->
-        <div v-for="(date, index) in dateList" v-model="index" :key="index" :class="{ 'carousel-item': true, active: index === activeSlide }">
-          <h5>{{ date }}</h5>
-          <h3>{{ index }}</h3>
-          <p>Some representative placeholder content for the first slide.</p>
+      <div
+        v-for="(date, index) in dateList"
+        :key="index"
+        :class="{ 'carousel-item': true, active: index === activeSlide }"
+      >
+        <h5>{{ date }}</h5>
+        <!-- <h3>{{ index }}</h3> -->
+      </div>
+    </div>
+    <!-- carousel controls -->
+    <button
+      class="carousel-control-prev"
+      type="button"
+      data-bs-target="#carouselExampleDark"
+      data-bs-slide="prev"
+      @click="updateActiveSlide('-')"
+    >
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button
+      class="carousel-control-next"
+      type="button"
+      data-bs-target="#carouselExampleDark"
+      data-bs-slide="next"
+      @click="updateActiveSlide('+')"
+    >
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+    <!-- carousel controls end-->
+  </div>
+
+  <!-- TODO: less margin between food items and Meal-Category 
+  but a little margin between each food category
+so between Breakfast section and lunch section a little more margin -->
+
+  <div class="container">
+    <div class="row">
+      <div class="col-1">
+        <!-- First column -->
+      </div>
+      <div class="col-10">
+        <!-- Middle column -->
+        <div style="background-color: #F4F4F4">
+          <div class="diary">
+            <div class="">
+              <p>Calories Remaining for {{ dateList.at(activeSlide) }}</p>
+              <h5>Goal - Food + Exercise = Remaining</h5>
+            </div>
+
+            <!-- Breakfast -->
+            <div class="meal-time my-4 mx-3 px-3 py-2">
+              <div
+                class="mb-0 d-flex justify-content-between align-items-baseline"
+              >
+                <p><strong>Breakfast</strong></p>
+                <p class="text-end">
+                  {{ isUpdated ? calorieTotals("bf") : "Loading calories" }}
+                </p>
+              </div>
+              <p class="subtext">
+                {{ isUpdated ? macrosMeal("bf") : "Loading Macros" }}
+              </p>
+            </div>
+            <div
+              v-for="item in breakfastItems"
+              :key="item"
+              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+              <div>
+                <p>{{ item.foodName }}</p>
+                <p class="subtext m-0">{{ item.unit }}</p>
+              </div>
+              <div class="text-end">
+                <p>{{ item.calories }}</p>
+              </div>
+            </div>
+            <!-- Add Food for breakfast -->
+            <div
+              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+                <button @click="addEntry('bf')" class="addEntryBtn">Add Food</button>
+            </div>
+
+            <!-- Lunch -->
+            <div class="meal-time my-4 mx-3 px-3 py-2">
+              <div
+                class="mb-0 d-flex justify-content-between align-items-baseline"
+              >
+                <p><strong>Lunch</strong></p>
+                <p class="text-end">
+                  {{ isUpdated ? calorieTotals("lunch") : "10000" }}
+                </p>
+              </div>
+              <p class="subtext">
+                {{ isUpdated ? macrosMeal("lunch") : "Loading Macros" }}
+              </p>
+            </div>
+            <div
+              v-for="item in lunchItems"
+              :key="item"
+              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+              <div>
+                <p>{{ item.foodName }}</p>
+                <p class="subtext m-0">{{ item.unit }}</p>
+              </div>
+              <div class="text-end">
+                <p>{{ item.calories }}</p>
+              </div>
+            </div>
+            <!-- Add Food for Lunch -->
+            <div
+              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+                <button @click="addEntry('lunch')" class="addEntryBtn">Add Food</button>
+            </div>
+
+            <!-- Dinner -->
+            <div class="meal-time my-4 mx-3 px-3 py-2">
+              <div
+                class="mb-0 d-flex justify-content-between align-items-baseline"
+              >
+                <p><strong>Dinner</strong></p>
+                <p class="text-end">
+                  {{ isUpdated ? calorieTotals("dinner") : "10000" }}
+                </p>
+              </div>
+              <p class="subtext">
+                {{ isUpdated ? macrosMeal("dinner") : "Loading Macros" }}
+              </p>
+            </div>
+            <div
+              v-for="item in dinnerItems"
+              :key="item"
+              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+              <div>
+                <p>{{ item.foodName }}</p>
+                <p class="subtext m-0">{{ item.unit }}</p>
+              </div>
+              <div class="text-end">
+                <p>{{ item.calories }}</p>
+              </div>
+            </div>
+            <!-- Add Food for dinner -->
+            <div
+              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+                <button @click="addEntry('dinner')" class="addEntryBtn">Add Food</button>
+            </div>
+
+            <!-- Snacks -->
+            <div class="meal-time my-4 mx-3 px-3 py-2">
+              <div
+                class="mb-0 d-flex justify-content-between align-items-baseline"
+              >
+                <p><strong>Snacks</strong></p>
+
+                <p class="text-end">
+                  {{ isUpdated ? calorieTotals("snacks") : "10000" }}
+                </p>
+              </div>
+              <p class="subtext">
+                {{ isUpdated ? macrosMeal("snacks") : "Loading Macros" }}
+              </p>
+            </div>
+            <div
+              v-for="item in snackItems"
+              :key="item"
+              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+              <div>
+                <p>{{ item.foodName }}</p>
+                <p class="subtext m-0">{{ item.unit }}</p>
+              </div>
+              <div class="text-end">
+                <p>{{ item.calories }}</p>
+              </div>
+            </div>
+            <!-- Add Food for Snacks -->
+            <div
+              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+                <button @click="addEntry('snacks')" class="addEntryBtn">Add Food</button>
+            </div>
+
+            <!-- Exercise -->
+            <div class="meal-time my-4 mx-3 px-3 py-2">
+              <div
+                class="mb-0 d-flex justify-content-between align-items-baseline"
+              >
+                <p><strong>Exercises</strong></p>
+                <p class="text-end">
+                  {{ isUpdated ? calorieTotals("exercise") : "10000" }}
+                </p>
+              </div>
+              <p class="subtext">Change this Carbs: XXg · Fat: YXg · Protein: 24g</p>
+            </div>
+            <div
+              v-for="item in exerciseItems"
+              :key="item"
+              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+              <div>
+                <p>{{ item.exerciseName }}</p>
+                <p class="subtext m-0">{{ item.duration }}</p>
+              </div>
+              <div class="text-end">
+                <p>{{ item.caloriesBurned }}</p>
+              </div>
+            </div>
+            <!-- Add Execise -->
+            <div
+              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+            >
+                <button @click="addEntry('exercise')" class="addEntryBtn">Add Exercise</button>
+            </div>
+
+            <!-- Totals -->
+            <div class="mt-4 mx-3">
+              <p><strong>Totals</strong></p>
+              <p>Change or fix margins / paddings here</p>
+              <!-- <p>{{ foodItem && foodItem.snacks ? foodItem.snacks : 'No snack data available' }}</p> -->
+            </div>
+          </div>
         </div>
       </div>
-      <!-- carousel controls -->
-      <button
-        class="carousel-control-prev"
-        type="button"
-        data-bs-target="#carouselExampleDark"
-        data-bs-slide="prev"
-        @click="updateActiveSlide(index - 1)"
-      >
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button
-        class="carousel-control-next"
-        type="button"
-        data-bs-target="#carouselExampleDark"
-        data-bs-slide="next"
-        @click="updateActiveSlide(index + 1)"
-      >
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
-      <!-- carousel controls end-->
-    </div>
-
-    <!-- Diary -->
-    <div class="diary">
-      <div class="">
-        <hr />
-        <p>Calories Remaining for INSERT DATE OF ACTIVEELEMENT</p>
-        <h3>Goal - Food + Exercise = Remaining</h3>
-      </div>
-      <div class="mb-4 mt-4">
-        <hr />
-        <h3>Breakfast</h3>
-        <div>active element:</div>
-        <div>{{ activeElement }}</div>
-      </div>
-      <div class="mb-4 mt-4">
-        <hr />
-        <h3>Lunch</h3>
-      </div>
-      <div class="mb-4 mt-4">
-        <hr />
-        <h3>Dinner</h3>
-      </div>
-      <div class="mb-4 mt-4">
-        <hr />
-        <h3>Exercise</h3>
-      </div>
-      <div class="mb-4 mt-4">
-        <hr />
-        <h3>Snacks</h3>
-      </div>
-      <div class="mb-4 mt-4">
-        <hr />
-        <h3>Totals</h3>
+      <div class="col-1">
+        <!-- Third column -->
       </div>
     </div>
   </div>
+
+  <!-- Diary -->
 </template>
 
 <script>
 export default {
   data() {
     return {
-      dateList: [],     
+      dateList: [],
       activeSlide: 0,
+      isUpdated: false,
+      // push and retrive data by accessing the key using the date as a string
+      // such as: 'Tue, 2. May 23' - I get this by calling: dateList.at(activeSlide)
+      // TODO: store data exactly like this also in Firebase
+      foodData: {
+        "Tue, 2. May 23": {
+          // TODO: store data for food element like this (also for addFood method):
+          breakfast: [
+            {
+              // TODO: give each food entry an ID (that can be generated by firebase)
+              foodName: "Pain au Chocolat",
+              calories: 350,
+              macronutrients: {
+                protein: 14,
+                carbohydrates: 102,
+                fat: 3.6,
+              },
+              unit: "1 serving",
+            },
+            {
+              foodName: "Protein Shake",
+              calories: 165,
+              macronutrients: {
+                protein: 31,
+                carbohydrates: 5,
+                fat: 9.6,
+              },
+              unit: "500 ml",
+            },
+            {
+              foodName: "Cream cheese bagel",
+              calories: 500,
+              macronutrients: {
+                protein: 40,
+                carbohydrates: 12,
+                fat: 98,
+              },
+              unit: "1 bagel",
+            },
+          ],
+          lunch: [
+            // TODO: give each food entry an ID (that can be generated by firebase)
+            {
+              foodName: "Burger Fries",
+              calories: 800,
+              macronutrients: {
+                protein: 31,
+                carbohydrates: 0,
+                fat: 3.6,
+              },
+              unit: "500 ml",
+            },
+            {
+              foodName: "Steak Frites Bernaise",
+              calories: 1500,
+              macronutrients: {
+                protein: 31,
+                carbohydrates: 0,
+                fat: 3.6,
+              },
+              unit: "1 bagel",
+            },
+          ],
+          dinner: [
+            {
+              // TODO: give each food entry an ID (that can be generated by firebase)
+              foodName: "Abendbrot",
+              calories: 350,
+              macronutrients: {
+                protein: 31,
+                carbohydrates: 0,
+                fat: 3.6,
+              },
+              unit: "1 serving",
+            },
+            {
+              foodName: "Käse Gouda",
+              calories: 500,
+              macronutrients: {
+                protein: 18,
+                carbohydrates: 13,
+                fat: 4.6,
+              },
+              unit: "1 bagel",
+            },
+          ],
+          exercise: [
+            {
+              exerciseName: "Running",
+              caloriesBurned: "400",
+              duration: "35 min",
+            },
+          ],
+          snacks: [
+            {
+              // TODO: give each food entry an ID (that can be generated by firebase)
+              foodName: "Pain au Chocolat",
+              calories: 350,
+              macronutrients: {
+                protein: 31,
+                carbohydrates: 0,
+                fat: 3.6,
+              },
+              unit: "1 serving",
+            },
+            {
+              foodName: "Protein Shake",
+              calories: 165,
+              macronutrients: {
+                protein: 31,
+                carbohydrates: 0,
+                fat: 3.6,
+              },
+              unit: "500 ml",
+            },
+            {
+              foodName: "Cream cheese bagel",
+              calories: 500,
+              macronutrients: {
+                protein: 31,
+                carbohydrates: 0,
+                fat: 3.6,
+              },
+              unit: "1 bagel",
+            },
+          ],
+          // totals: "" // TODO: dont need these just add food and subtract exercise
+        },
+        "Wed, 3. May 23": {
+          breakfast: "croissant 300 cals",
+          lunch: "protein shake 700 cals",
+          dinner: "burher 1200 cals",
+          exercise: "walk: 800 cals",
+          snacks: "chocolate 200 cals",
+        },
+      },
     };
   },
   mounted() {
     this.getDates();
-    // this.activeElement = this.$refs.carousel.querySelector('.carousel-item.active');
+    // this.isMounted = true;
+  },
+  updated() {
+    this.isUpdated = true;
   },
   computed: {
-    activeElement() {
-      // console.log("chaning active slide");
-      console.log(this.activeSlide);
-      return this.dateList.at(this.activeSlide);
-    }
-  },
-  watch: {
-    activeSlide(newValue, oldValue) {
-      console.log(`Message changed from ${oldValue} to ${newValue}`);
-    }
+    breakfastItems() {
+      if (this.dateList && this.activeSlide !== null) {
+        const foodData = this.getFoodData();
+        if (foodData && foodData.breakfast) {
+          return foodData.breakfast;
+        } else {
+          return null;
+        }
+      }
+      return "Loading";
+    },
+    lunchItems() {
+      if (this.dateList && this.activeSlide !== null) {
+        const foodData = this.getFoodData();
+        if (foodData && foodData.lunch) {
+          return foodData.lunch;
+        } else {
+          return "No lunch data available";
+        }
+      }
+      return "Loading";
+    },
+    dinnerItems() {
+      if (this.dateList && this.activeSlide !== null) {
+        const foodData = this.getFoodData();
+        if (foodData && foodData.dinner) {
+          return foodData.dinner;
+        } else {
+          return "No dinner data available";
+        }
+      }
+      return "Loading";
+    },
+    snackItems() {
+      if (this.dateList && this.activeSlide !== null) {
+        const foodData = this.getFoodData();
+        if (foodData && foodData.snacks) {
+          return foodData.snacks;
+        } else {
+          return "No snack data available";
+        }
+      }
+      return "Loading";
+    },
+    exerciseItems() {
+      if (this.dateList && this.activeSlide !== null) {
+        const foodData = this.getFoodData();
+        if (foodData && foodData.exercise) {
+          return foodData.exercise;
+        } else {
+          return "No exercise data available";
+        }
+      }
+      return "Loading";
+    },
   },
   methods: {
-    updateActiveSlide(newIndex) {
-      console.log("New index: " + newIndex);
+    getFoodData() {
+      if (this.dateList != null && this.activeSlide !== null) {
+        return this.foodData[this.dateList.at(this.activeSlide)];
+      }
+      return null;
+    },
+    updateActiveSlide(operation) {
+      operation === "+" ? this.activeSlide++ : this.activeSlide--;
     },
     getDates() {
       const startDate = new Date("2023-05-02");
@@ -134,7 +491,6 @@ export default {
           `${weekday.slice(0, 3)}, ${this.formatDate(dateString)}`
         );
       }
-      // console.log(this.dateList);
     },
     formatDate(dateString) {
       const months = [
@@ -157,16 +513,121 @@ export default {
       const year = date.getFullYear().toString().substr(-2);
       return `${day}. ${month} ${year}`;
     },
+    addEntry(category) {
+      //category again -> brakfast, lunch, exercise etc is a parameter
+      console.log(category);
+      // add food or exercise to that category
+
+      //TODO: add food item, also pop up when you click on the button
+      alert("Add Item to: " + category);
+    },
+    macrosMeal(category) {
+      let macros = {
+        protein: 0,
+        carbohydrates: 0,
+        fat: 0,
+      };
+      let foodEntries = null;
+
+      switch (category) {
+        case "bf":
+          foodEntries = this.breakfastItems;
+          break;
+        case "lunch":
+          foodEntries = this.lunchItems;
+          break;
+        case "dinner":
+          foodEntries = this.dinnerItems;
+          break;
+        case "snacks":
+          foodEntries = this.snackItems;
+          break;
+        case "exercise":
+          foodEntries = this.exerciseItems;
+          break;
+        default:
+          break;
+      }
+
+      if (foodEntries !== null) {
+        for (let i = 0; i < foodEntries.length; i++) {
+          console.log(foodEntries[i].macronutrients); // macros for one foodItem
+          macros.protein += foodEntries[i].macronutrients.protein;
+          macros.carbohydrates += foodEntries[i].macronutrients.carbohydrates;
+          macros.fat += foodEntries[i].macronutrients.fat;
+        }
+      }
+
+      return `Carbs: ${macros.carbohydrates}g · Protein: ${macros.protein}g · Fat: ${macros.fat}g`;
+      // return macros;
+    },
+    macorsSingleFoodItem() {
+      //TODO: make a pop up card, which can be clicked away
+      // with the info to that food item
+      //TODO: use same function as in macrosMeal()
+      // or just call this function from inside macrosMeal()
+    },
+    calorieTotals(category) {
+      // category is 'breakfast', 'lunch' etc.
+      let calTotal = 0;
+      let foodEntries = null;
+
+      switch (category) {
+        case "bf":
+          foodEntries = this.breakfastItems;
+          break;
+        case "lunch":
+          foodEntries = this.lunchItems;
+          break;
+        case "dinner":
+          foodEntries = this.dinnerItems;
+          break;
+        case "snacks":
+          foodEntries = this.snackItems;
+          break;
+        case "exercise":
+          foodEntries = this.exerciseItems;
+          break;
+        default:
+          break;
+      }
+      if (foodEntries !== null) {
+        for (let i = 0; i < foodEntries.length; i++) {
+          // console.log(foodEntries[i].calories);
+          calTotal += foodEntries[i].calories;
+        }
+      }
+      return calTotal;
+    },
   },
 };
 </script>
 
 <style scoped>
-
-.diary h3{
-  text-align: center;
+.addEntryBtn {
+  background: none;
+  border: none;
+  color: #0166ee;
+  cursor: pointer;
+  font-size: inherit;
+  font-weight: bold;
+  padding: 0;
+  text-decoration: none;
+}
+.addEntryBtn:hover {
+  opacity: 0.85;
+}
+p.subtext {
+  font-size: 0.8em;
+  color: #999;
 }
 
+p {
+  margin-bottom: 0;
+}
+.diary div {
+  background-color: white;
+}
 
 .carousel-item {
   text-align: center;
