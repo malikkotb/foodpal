@@ -1,253 +1,273 @@
 <template>
-  <!-- carousel -->
-  <div
-    id="carouselExampleDark"
-    class="carousel carousel-dark slide p-4"
-    data-bs-ride="false"
-    style="background-color: #F4F4F4"
-  >
-    <div ref="carousel" class="carousel-inner">
-      <!-- TODO: bind the :class to active if todays' date is that date -->
-      <!-- <div class="carousel-item active">
+  <div style="background-color: #F8F9FA">
+    <!-- carousel -->
+    <div
+      id="carouselExampleDark"
+      class="carousel carousel-dark slide p-4"
+      data-bs-ride="false"
+      style="background-color: #F8F9FA"
+    >
+      <div ref="carousel" class="carousel-inner">
+        <!-- TODO: bind the :class to active if todays' date is that date -->
+        <!-- <div class="carousel-item active">
           <h5>Today 2. May 23</h5>
           <p>Some representative placeholder content for the second slide.</p>
         </div> -->
-      <div
-        v-for="(date, index) in dateList"
-        :key="index"
-        :class="{ 'carousel-item': true, active: index === activeSlide }"
-      >
-        <h5>{{ date }}</h5>
-        <!-- <h3>{{ index }}</h3> -->
+        <div
+          v-for="(date, index) in dateList"
+          :key="index"
+          :class="{ 'carousel-item': true, active: index === activeSlide }"
+        >
+          <h5>{{ date }}</h5>
+          <!-- <h3>{{ index }}</h3> -->
+        </div>
       </div>
+      <!-- carousel controls -->
+      <button
+        class="carousel-control-prev"
+        type="button"
+        data-bs-target="#carouselExampleDark"
+        data-bs-slide="prev"
+        @click="updateActiveSlide('-')"
+      >
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button
+        class="carousel-control-next"
+        type="button"
+        data-bs-target="#carouselExampleDark"
+        data-bs-slide="next"
+        @click="updateActiveSlide('+')"
+      >
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+      <!-- carousel controls end-->
     </div>
-    <!-- carousel controls -->
-    <button
-      class="carousel-control-prev"
-      type="button"
-      data-bs-target="#carouselExampleDark"
-      data-bs-slide="prev"
-      @click="updateActiveSlide('-')"
-    >
-      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Previous</span>
-    </button>
-    <button
-      class="carousel-control-next"
-      type="button"
-      data-bs-target="#carouselExampleDark"
-      data-bs-slide="next"
-      @click="updateActiveSlide('+')"
-    >
-      <span class="carousel-control-next-icon" aria-hidden="true"></span>
-      <span class="visually-hidden">Next</span>
-    </button>
-    <!-- carousel controls end-->
-  </div>
 
-  <!-- TODO: less margin between food items and Meal-Category 
+    <!-- TODO: less margin between food items and Meal-Category 
   but a little margin between each food category
 so between Breakfast section and lunch section a little more margin -->
 
-  <div class="container">
-    <div class="row">
-      <div class="col-1">
-        <!-- First column -->
-      </div>
-      <div class="col-10">
-        <!-- Middle column -->
-        <div style="background-color: #F4F4F4">
-          <div class="diary">
-            <div class="">
-              <p>Calories Remaining for {{ dateList.at(activeSlide) }}</p>
-              <h5>Goal - Food + Exercise = Remaining</h5>
-            </div>
+    <div class="container px-0">
+      <div class="row">
+        <div class="col-1">
+          <!-- First column -->
+        </div>
+        <div class="col-10 px-0">
+          <!-- Middle column -->
+          <div style="background-color: #F8F9FA">
+            <div class="diary">
+              <div class="caloriesRemaining mt-0 mb-2 mx-3 px-3 py-4">
+                <div
+                  class="mb-0 d-flex justify-content-between align-items-baseline"
+                >
+                  <p><strong>Calories Remaining</strong></p>
+                  <p class="text-end">
+                    ---
+                    {{ dateList.at(activeSlide) }}
+                  </p>
+                </div>
+                <p class="">Goal - Food + Exercise = Remaining</p>
+              </div>
 
-            <!-- Breakfast -->
-            <div class="meal-time my-4 mx-3 px-3 py-2">
-              <div
-                class="mb-0 d-flex justify-content-between align-items-baseline"
-              >
-                <p><strong>Breakfast</strong></p>
-                <p class="text-end">
-                  {{ isUpdated ? calorieTotals("bf") : "Loading calories" }}
+              <!-- Breakfast -->
+              <div class="meal-time mt-4 mb-2 mx-3 px-3 py-2">
+                <div
+                  class="mb-0 d-flex justify-content-between align-items-baseline"
+                >
+                  <p><strong>Breakfast</strong></p>
+                  <p class="text-end">
+                    {{ isUpdated ? calorieTotals("bf") : "Loading calories" }}
+                  </p>
+                </div>
+                <p class="subtext">
+                  {{ isUpdated ? macrosMeal("bf") : "Loading Macros" }}
                 </p>
               </div>
-              <p class="subtext">
-                {{ isUpdated ? macrosMeal("bf") : "Loading Macros" }}
-              </p>
-            </div>
-            <div
-              v-for="item in breakfastItems"
-              :key="item"
-              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-              <div>
-                <p>{{ item.foodName }}</p>
-                <p class="subtext m-0">{{ item.unit }}</p>
-              </div>
-              <div class="text-end">
-                <p>{{ item.calories }}</p>
-              </div>
-            </div>
-            <!-- Add Food for breakfast -->
-            <div
-              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-                <button @click="addEntry('bf')" class="addEntryBtn">Add Food</button>
-            </div>
-
-            <!-- Lunch -->
-            <div class="meal-time my-4 mx-3 px-3 py-2">
               <div
-                class="mb-0 d-flex justify-content-between align-items-baseline"
+                v-for="item in breakfastItems"
+                :key="item"
+                class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
               >
-                <p><strong>Lunch</strong></p>
-                <p class="text-end">
-                  {{ isUpdated ? calorieTotals("lunch") : "10000" }}
+                <div>
+                  <p>{{ item.foodName }}</p>
+                  <p class="subtext m-0">{{ item.unit }}</p>
+                </div>
+                <div class="text-end">
+                  <p>{{ item.calories }}</p>
+                </div>
+              </div>
+              <!-- Add Food for breakfast -->
+              <div
+                class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+              >
+                <button @click="addEntry('bf')" class="addEntryBtn">
+                  Add Food
+                </button>
+              </div>
+
+              <!-- Lunch -->
+              <div class="meal-time mt-4 mb-2 mx-3 px-3 py-2">
+                <div
+                  class="mb-0 d-flex justify-content-between align-items-baseline"
+                >
+                  <p><strong>Lunch</strong></p>
+                  <p class="text-end">
+                    {{ isUpdated ? calorieTotals("lunch") : "10000" }}
+                  </p>
+                </div>
+                <p class="subtext">
+                  {{ isUpdated ? macrosMeal("lunch") : "Loading Macros" }}
                 </p>
               </div>
-              <p class="subtext">
-                {{ isUpdated ? macrosMeal("lunch") : "Loading Macros" }}
-              </p>
-            </div>
-            <div
-              v-for="item in lunchItems"
-              :key="item"
-              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-              <div>
-                <p>{{ item.foodName }}</p>
-                <p class="subtext m-0">{{ item.unit }}</p>
-              </div>
-              <div class="text-end">
-                <p>{{ item.calories }}</p>
-              </div>
-            </div>
-            <!-- Add Food for Lunch -->
-            <div
-              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-                <button @click="addEntry('lunch')" class="addEntryBtn">Add Food</button>
-            </div>
-
-            <!-- Dinner -->
-            <div class="meal-time my-4 mx-3 px-3 py-2">
               <div
-                class="mb-0 d-flex justify-content-between align-items-baseline"
+                v-for="item in lunchItems"
+                :key="item"
+                class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
               >
-                <p><strong>Dinner</strong></p>
-                <p class="text-end">
-                  {{ isUpdated ? calorieTotals("dinner") : "10000" }}
+                <div>
+                  <p>{{ item.foodName }}</p>
+                  <p class="subtext m-0">{{ item.unit }}</p>
+                </div>
+                <div class="text-end">
+                  <p>{{ item.calories }}</p>
+                </div>
+              </div>
+              <!-- Add Food for Lunch -->
+              <div
+                class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+              >
+                <button @click="addEntry('lunch')" class="addEntryBtn">
+                  Add Food
+                </button>
+              </div>
+
+              <!-- Dinner -->
+              <div class="meal-time mt-4 mb-2 mx-3 px-3 py-2">
+                <div
+                  class="mb-0 d-flex justify-content-between align-items-baseline"
+                >
+                  <p><strong>Dinner</strong></p>
+                  <p class="text-end">
+                    {{ isUpdated ? calorieTotals("dinner") : "10000" }}
+                  </p>
+                </div>
+                <p class="subtext">
+                  {{ isUpdated ? macrosMeal("dinner") : "Loading Macros" }}
                 </p>
               </div>
-              <p class="subtext">
-                {{ isUpdated ? macrosMeal("dinner") : "Loading Macros" }}
-              </p>
-            </div>
-            <div
-              v-for="item in dinnerItems"
-              :key="item"
-              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-              <div>
-                <p>{{ item.foodName }}</p>
-                <p class="subtext m-0">{{ item.unit }}</p>
-              </div>
-              <div class="text-end">
-                <p>{{ item.calories }}</p>
-              </div>
-            </div>
-            <!-- Add Food for dinner -->
-            <div
-              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-                <button @click="addEntry('dinner')" class="addEntryBtn">Add Food</button>
-            </div>
-
-            <!-- Snacks -->
-            <div class="meal-time my-4 mx-3 px-3 py-2">
               <div
-                class="mb-0 d-flex justify-content-between align-items-baseline"
+                v-for="item in dinnerItems"
+                :key="item"
+                class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
               >
-                <p><strong>Snacks</strong></p>
+                <div>
+                  <p>{{ item.foodName }}</p>
+                  <p class="subtext m-0">{{ item.unit }}</p>
+                </div>
+                <div class="text-end">
+                  <p>{{ item.calories }}</p>
+                </div>
+              </div>
+              <!-- Add Food for dinner -->
+              <div
+                class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+              >
+                <button @click="addEntry('dinner')" class="addEntryBtn">
+                  Add Food
+                </button>
+              </div>
 
-                <p class="text-end">
-                  {{ isUpdated ? calorieTotals("snacks") : "10000" }}
+              <!-- Snacks -->
+              <div class="meal-time mt-4 mb-2 mx-3 px-3 py-2">
+                <div
+                  class="mb-0 d-flex justify-content-between align-items-baseline"
+                >
+                  <p><strong>Snacks</strong></p>
+
+                  <p class="text-end">
+                    {{ isUpdated ? calorieTotals("snacks") : "10000" }}
+                  </p>
+                </div>
+                <p class="subtext">
+                  {{ isUpdated ? macrosMeal("snacks") : "Loading Macros" }}
                 </p>
               </div>
-              <p class="subtext">
-                {{ isUpdated ? macrosMeal("snacks") : "Loading Macros" }}
-              </p>
-            </div>
-            <div
-              v-for="item in snackItems"
-              :key="item"
-              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-              <div>
-                <p>{{ item.foodName }}</p>
-                <p class="subtext m-0">{{ item.unit }}</p>
-              </div>
-              <div class="text-end">
-                <p>{{ item.calories }}</p>
-              </div>
-            </div>
-            <!-- Add Food for Snacks -->
-            <div
-              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-                <button @click="addEntry('snacks')" class="addEntryBtn">Add Food</button>
-            </div>
-
-            <!-- Exercise -->
-            <div class="meal-time my-4 mx-3 px-3 py-2">
               <div
-                class="mb-0 d-flex justify-content-between align-items-baseline"
+                v-for="item in snackItems"
+                :key="item"
+                class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
               >
-                <p><strong>Exercises</strong></p>
-                <p class="text-end">
-                  {{ isUpdated ? calorieTotals("exercise") : "10000" }}
+                <div>
+                  <p>{{ item.foodName }}</p>
+                  <p class="subtext m-0">{{ item.unit }}</p>
+                </div>
+                <div class="text-end">
+                  <p>{{ item.calories }}</p>
+                </div>
+              </div>
+              <!-- Add Food for Snacks -->
+              <div
+                class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+              >
+                <button @click="addEntry('snacks')" class="addEntryBtn">
+                  Add Food
+                </button>
+              </div>
+
+              <!-- Exercise -->
+              <div class="meal-time mt-4 mb-2 mx-3 px-3 py-2">
+                <div
+                  class="mb-0 d-flex justify-content-between align-items-baseline"
+                >
+                  <p><strong>Exercises</strong></p>
+                  <p class="text-end">
+                    {{ isUpdated ? calorieTotals("exercise") : "10000" }}
+                  </p>
+                </div>
+                <p class="subtext" style="color: red">
+                  <strong>Change this</strong>
                 </p>
               </div>
-              <p class="subtext">Change this Carbs: XXg · Fat: YXg · Protein: 24g</p>
-            </div>
-            <div
-              v-for="item in exerciseItems"
-              :key="item"
-              class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-              <div>
-                <p>{{ item.exerciseName }}</p>
-                <p class="subtext m-0">{{ item.duration }}</p>
+              <div
+                v-for="item in exerciseItems"
+                :key="item"
+                class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+              >
+                <div>
+                  <p>{{ item.exerciseName }}</p>
+                  <p class="subtext m-0">{{ item.duration }}</p>
+                </div>
+                <div class="text-end">
+                  <p>{{ item.caloriesBurned }}</p>
+                </div>
               </div>
-              <div class="text-end">
-                <p>{{ item.caloriesBurned }}</p>
+              <!-- Add Execise -->
+              <div
+                class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+              >
+                <button @click="addEntry('exercise')" class="addEntryBtn">
+                  Add Exercise
+                </button>
               </div>
-            </div>
-            <!-- Add Execise -->
-            <div
-              class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
-            >
-                <button @click="addEntry('exercise')" class="addEntryBtn">Add Exercise</button>
-            </div>
 
-            <!-- Totals -->
-            <div class="mt-4 mx-3">
-              <p><strong>Totals</strong></p>
-              <p>Change or fix margins / paddings here</p>
-              <!-- <p>{{ foodItem && foodItem.snacks ? foodItem.snacks : 'No snack data available' }}</p> -->
+              <!-- Totals -->
+              <div class="mt-4 mx-3">
+                <p><strong>Totals</strong></p>
+                <p>Change or fix margins / paddings here</p>
+                <!-- <p>{{ foodItem && foodItem.snacks ? foodItem.snacks : 'No snack data available' }}</p> -->
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="col-1">
-        <!-- Third column -->
+        <div class="col-1">
+          <!-- Third column -->
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Diary -->
 </template>
 
 <script>
@@ -255,6 +275,7 @@ export default {
   data() {
     return {
       dateList: [],
+      userCalories: 3000, // TODO: change this to global variable, get from vuex store
       activeSlide: 0,
       isUpdated: false,
       // push and retrive data by accessing the key using the date as a string
