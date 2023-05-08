@@ -12,6 +12,10 @@
           , so only display the date of the current day by retrieving data
           from firebase using today.getDate()
         </h1>
+        <h1>Generate effects for adding food and deleting food (transitions), like the card comes in from the left
+                and slides out through the right 
+                AND when you hover over a card it zooms in a little and then you can press on the card to see the details of that food item
+              </h1>
         
         <!-- <div class="row">
           <div class="col-xl-6">

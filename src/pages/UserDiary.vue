@@ -1,11 +1,53 @@
 <template>
-  <div style="background-color: #F8F9FA">
+  <div style="background-color: #f8f9fa">
+    <!-- <div v-if="showCard" class="card">
+      <div class="card-body">
+        <button @click="closeCard()">Close</button>
+      </div>
+    </div> -->
+
+    <div v-if="showCard" class="card">
+      <div class="card-header">
+        <h4 style="text-align: center">{{ addCategory }}</h4>
+      </div>
+      <div class="card-body px-4">
+        <form>
+          <div class="mb-3">
+            <label for="inputField" class="form-label">Input Field</label>
+            <input
+              type="text"
+              class="form-control"
+              id="inputField"
+              v-model="inputValue"
+            />
+          </div>
+          <div class="mb-3">
+            <div class="scrollable-list">
+              <ul>
+                <li>Item 1</li>
+                <li>Item 2</li>
+                <li>Item 3</li>
+                <li>Item 4</li>
+                <li>Item 5</li>
+                <li>Item 6</li>
+                <li>Item 7</li>
+                <li>Item 8</li>
+                <li>Item 9</li>
+                <li>Item 10</li>
+              </ul>
+            </div>
+          </div>
+        </form>
+      </div>
+      <button class="addFoodBtn" @click="closeCard">Add</button>
+    </div>
+
     <!-- carousel -->
     <div
       id="carouselExampleDark"
       class="carousel carousel-dark slide p-4"
       data-bs-ride="false"
-      style="background-color: #F8F9FA"
+      style="background-color: #f8f9fa"
     >
       <div ref="carousel" class="carousel-inner">
         <!-- TODO: bind the :class to active if todays' date is that date -->
@@ -57,19 +99,23 @@ so between Breakfast section and lunch section a little more margin -->
         </div>
         <div class="col-10 px-0">
           <!-- Middle column -->
-          <div style="background-color: #F8F9FA">
+          <div style="background-color: #f8f9fa">
             <div class="diary">
               <div class="caloriesRemaining mt-0 mb-2 mx-3 px-3 py-4">
                 <div
                   class="mb-0 d-flex justify-content-between align-items-baseline"
                 >
-                  <p><strong>Calories Remaining</strong></p>
+                  <p class="mb-2">Calories Remaining</p>
                   <p class="text-end">
-                    ---
                     {{ dateList.at(activeSlide) }}
                   </p>
                 </div>
-                <p class="">Goal - Food + Exercise = Remaining</p>
+                <div class="calTotalDay">
+                  <h6 class="calTotalText">
+                    300__ - 2543___ + 300_______ = ____400_____
+                  </h6>
+                  <p class="calSubtext">Goal Food Exercise Remaining</p>
+                </div>
               </div>
 
               <!-- Breakfast -->
@@ -254,7 +300,7 @@ so between Breakfast section and lunch section a little more margin -->
               </div>
 
               <!-- Totals -->
-              <div class="mt-4 mx-3">
+              <div class="food-entry mt-4 mx-3">
                 <p><strong>Totals</strong></p>
                 <p>Change or fix margins / paddings here</p>
                 <!-- <p>{{ foodItem && foodItem.snacks ? foodItem.snacks : 'No snack data available' }}</p> -->
@@ -275,6 +321,8 @@ export default {
   data() {
     return {
       dateList: [],
+      showCard: false,
+      addCategory: "",
       userCalories: 3000, // TODO: change this to global variable, get from vuex store
       activeSlide: 0,
       isUpdated: false,
@@ -535,12 +583,34 @@ export default {
       return `${day}. ${month} ${year}`;
     },
     addEntry(category) {
-      //category again -> brakfast, lunch, exercise etc is a parameter
+      switch (category) {
+        case "bf":
+          this.addCategory = "Breakfast";
+          break;
+        case "lunch":
+          this.addCategory = "Lunch";
+          break;
+        case "dinner":
+          this.addCategory = "Dinner";
+          break;
+        case "snacks":
+          this.addCategory = "Snacks";
+          break;
+        case "exercise":
+          this.addCategory = "Exercise";
+          break;
+        default:
+          break;
+      }
+
       console.log(category);
       // add food or exercise to that category
-
-      //TODO: add food item, also pop up when you click on the button
-      alert("Add Item to: " + category);
+      this.showCard = true;
+      document.body.style.overflow = "hidden"; // prevent scrolling
+    },
+    closeCard() {
+      this.showCard = false;
+      document.body.style.overflow = "auto";
     },
     macrosMeal(category) {
       let macros = {
@@ -625,6 +695,21 @@ export default {
 </script>
 
 <style scoped>
+.caloriesRemaining,
+.meal-time,
+.food-entry {
+  border-radius: 5px;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border: none;
+}
+.calTotalText {
+}
+.calSubtext {
+  word-spacing: 50px;
+}
+.calTotalDay {
+  text-align: center;
+}
 .addEntryBtn {
   background: none;
   border: none;
@@ -641,6 +726,46 @@ export default {
 p.subtext {
   font-size: 0.8em;
   color: #999;
+}
+
+.scrollable-list {
+  height: 150px;
+  overflow-y: scroll;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  padding: 10px;
+}
+
+.card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+  width: 400px;
+  height: 400px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  /* transition: transform 0.3s ease-in-out; */
+}
+
+.addFoodBtn {
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  outline: none;
+  cursor: pointer;
 }
 
 p {
