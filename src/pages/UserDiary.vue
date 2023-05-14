@@ -11,35 +11,49 @@
         <h4 style="text-align: center">{{ addCategory }}</h4>
       </div>
       <div class="card-body px-4">
-        <form>
-          <div class="mb-3">
-            <label for="inputField" class="form-label">Input Field</label>
+        <div class="row">
+          <div class="mb-0 col-md-6 addFoodCol">
+            <!-- <label for="inputField" class="form-label">Input Field</label> -->
             <input
               type="text"
               class="form-control"
               id="inputField"
               v-model="inputValue"
+              placeholder="Search..."
             />
-          </div>
-          <div class="mb-3">
             <div class="scrollable-list">
               <ul>
-                <li>Item 1</li>
-                <li>Item 2</li>
-                <li>Item 3</li>
-                <li>Item 4</li>
-                <li>Item 5</li>
-                <li>Item 6</li>
-                <li>Item 7</li>
-                <li>Item 8</li>
-                <li>Item 9</li>
-                <li>Item 10</li>
+                <li
+                  v-for="(item, index) in foodList"
+                  :key="index"
+                  @click="selectItem(index, item)"
+                  :class="{ selected: index === selectedItem }"
+                >
+                  {{ item.foodName }}
+                </li>
               </ul>
             </div>
           </div>
-        </form>
+          <div class="mb-0 col-md-6 addFoodCol">
+            <!-- TODO: replace this with Chart.js with data of current food item -->
+            <img width="200" src="../assets/calorieDemo.png">
+            <div v-if="selectedItemToAdd">
+              <p>Calories: {{ selectedItemToAdd.calories}} cal</p>
+              <p>Carbohydrate: {{ selectedItemToAdd.macronutrients.carbohydrates }}g</p>
+              <p>Fat: {{ selectedItemToAdd.macronutrients.fat }}g</p>
+              <p>Protein: {{ selectedItemToAdd.macronutrients.protein }}g</p>
+            </div>
+            <h3 v-else class="text-center">Search for a food</h3>
+          </div>
+        </div>
       </div>
-      <button class="addFoodBtn" @click="closeCard">Add</button>
+      <button
+        class="addFoodBtn"
+        v-bind:disabled="!(selectedItem > -1)"
+        @click="closeCard"
+      >
+        Add
+      </button>
     </div>
 
     <!-- carousel -->
@@ -323,9 +337,115 @@ export default {
       dateList: [],
       showCard: false,
       addCategory: "",
+      inputValue: "", //TODO: use this to search for a food in the database
       userCalories: 3000, // TODO: change this to global variable, get from vuex store
       activeSlide: 0,
       isUpdated: false,
+      foodList: [
+        {
+          foodName: "Salmon",
+          calories: 233,
+          macronutrients: {
+            protein: 24,
+            carbohydrates: 0,
+            fat: 15,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Spinach",
+          calories: 23,
+          macronutrients: {
+            protein: 2.9,
+            carbohydrates: 3.6,
+            fat: 0.4,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Almonds",
+          calories: 576,
+          macronutrients: {
+            protein: 21,
+            carbohydrates: 22,
+            fat: 49,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Chicken Breast",
+          calories: 165,
+          macronutrients: {
+            protein: 31,
+            carbohydrates: 0,
+            fat: 3.6,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Broccoli",
+          calories: 34,
+          macronutrients: {
+            protein: 2.8,
+            carbohydrates: 6.6,
+            fat: 0.4,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Greek Yogurt",
+          calories: 59,
+          macronutrients: {
+            protein: 10,
+            carbohydrates: 3.6,
+            fat: 0.4,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Sweet Potato",
+          calories: 86,
+          macronutrients: {
+            protein: 1.6,
+            carbohydrates: 20,
+            fat: 0.1,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Avocado",
+          calories: 160,
+          macronutrients: {
+            protein: 2,
+            carbohydrates: 9,
+            fat: 15,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Quinoa",
+          calories: 120,
+          macronutrients: {
+            protein: 4.4,
+            carbohydrates: 21,
+            fat: 1.9,
+          },
+          unit: "100g",
+        },
+        {
+          foodName: "Egg",
+          calories: 155,
+          macronutrients: {
+            protein: 13,
+            carbohydrates: 1.1,
+            fat: 11,
+          },
+          unit: "100g",
+        },
+      ],
+      //TODO: get these from store / bzw. fatsecretApi
+      selectedItem: -1,
+      itemToAdd: null,
       // push and retrive data by accessing the key using the date as a string
       // such as: 'Tue, 2. May 23' - I get this by calling: dateList.at(activeSlide)
       // TODO: store data exactly like this also in Firebase
@@ -471,6 +591,10 @@ export default {
     this.isUpdated = true;
   },
   computed: {
+    selectedItemToAdd() {
+      // currently selected item in the list -> for displaying info about that food
+      return this.foodList[this.selectedItem];
+    },
     breakfastItems() {
       if (this.dateList && this.activeSlide !== null) {
         const foodData = this.getFoodData();
@@ -602,15 +726,20 @@ export default {
         default:
           break;
       }
-
-      console.log(category);
-      // add food or exercise to that category
       this.showCard = true;
-      document.body.style.overflow = "hidden"; // prevent scrolling
+      // document.body.style.overflow = "hidden"; // prevent scrolling
     },
     closeCard() {
+      // call the actual method, that adds a new item to the list
+      this.pushItem(this.itemToAdd);
       this.showCard = false;
-      document.body.style.overflow = "auto";
+      this.itemToAdd = null;
+      this.selectedItem = -1;
+
+      // document.body.style.overflow = "auto";
+    },
+    pushItem(newEntry) {
+      console.log("newEntry to add: " + newEntry);
     },
     macrosMeal(category) {
       let macros = {
@@ -642,7 +771,7 @@ export default {
 
       if (foodEntries !== null) {
         for (let i = 0; i < foodEntries.length; i++) {
-          console.log(foodEntries[i].macronutrients); // macros for one foodItem
+          // console.log(foodEntries[i].macronutrients); // macros for one foodItem
           macros.protein += foodEntries[i].macronutrients.protein;
           macros.carbohydrates += foodEntries[i].macronutrients.carbohydrates;
           macros.fat += foodEntries[i].macronutrients.fat;
@@ -652,9 +781,15 @@ export default {
       return `Carbs: ${macros.carbohydrates}g · Protein: ${macros.protein}g · Fat: ${macros.fat}g`;
       // return macros;
     },
+    selectItem(index, item) {
+      this.selectedItem = index;
+      this.itemToAdd = item;
+      console.log(index + ", " + item);
+    },
     macorsSingleFoodItem() {
-      //TODO: make a pop up card, which can be clicked away
-      // with the info to that food item
+      //TODO: make individual food items spawn a pop up card,
+      // which can be clicked away
+      // with the info and macros to that food item
       //TODO: use same function as in macrosMeal()
       // or just call this function from inside macrosMeal()
     },
@@ -729,8 +864,17 @@ p.subtext {
 }
 
 .scrollable-list {
-  height: 150px;
+  height: 300px;
+  /* height: 100% */
+  /* width: 100px; */
   overflow-y: scroll;
+}
+
+.scrollable-list .selected {
+  background-color: #f8f9fa;
+}
+.scrollable-list li:hover {
+  background-color: #f8f9fa;
 }
 
 ul {
@@ -749,12 +893,17 @@ li {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 999;
-  width: 400px;
-  height: 400px;
+  width: 450px;
+  height: 450px;
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   /* transition: transform 0.3s ease-in-out; */
+}
+
+.addFoodCol {
+  background-color: lightblue;
+  height: 350px;
 }
 
 .addFoodBtn {
@@ -766,6 +915,16 @@ li {
   border: none;
   outline: none;
   cursor: pointer;
+}
+
+.addFoodBtn:hover {
+  background-color: #0062cc;
+}
+
+.addFoodBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 p {
