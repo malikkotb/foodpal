@@ -6,11 +6,13 @@
       </div>
     </div> -->
 
-    <div v-if="showCard" class="card">
+    <div class="card">
+      <!-- <div v-if="showCard" class="card"> -->
+
       <div class="card-header">
-        <h4 style="text-align: center">{{ addCategory }}</h4>
+        <h4 class="mb-0" style="text-align: center">{{ addCategory }}</h4>
       </div>
-      <div class="card-body px-4">
+      <div class="card-body px-4 pb-0">
         <div class="row">
           <div class="mb-0 col-md-6 addFoodCol">
             <!-- <label for="inputField" class="form-label">Input Field</label> -->
@@ -36,12 +38,36 @@
           </div>
           <div class="mb-0 col-md-6 addFoodCol">
             <!-- TODO: replace this with Chart.js with data of current food item -->
-            <img width="200" src="../assets/calorieDemo.png">
+            <!-- <div class="macroChartDiv">
+              <canvas id="macrosChart" width="170"></canvas>
+            </div> -->
+
+            <div class="relative" style="height: 150px">
+              <canvas ref="myChart" id="macrosChart"></canvas>
+              <div class="absolute-center text-center">
+                <p style="font-size: 1.2rem" v-if="selectedItem > -1">
+                  <strong>{{ selectedItemToAdd.calories }}</strong>
+                </p>
+                <p>cal</p>
+              </div>
+            </div>
+
             <div v-if="selectedItemToAdd">
-              <p>Calories: {{ selectedItemToAdd.calories}} cal</p>
-              <p>Carbohydrate: {{ selectedItemToAdd.macronutrients.carbohydrates }}g</p>
-              <p>Fat: {{ selectedItemToAdd.macronutrients.fat }}g</p>
-              <p>Protein: {{ selectedItemToAdd.macronutrients.protein }}g</p>
+              <!-- <p>Calories: {{ selectedItemToAdd.calories }} cal</p> -->
+              <p>
+                Carbohydrate:
+                <strong
+                  >{{ selectedItemToAdd.macronutrients.carbohydrates }}g</strong
+                >
+              </p>
+              <p>
+                Fat:
+                <strong>{{ selectedItemToAdd.macronutrients.fat }}g</strong>
+              </p>
+              <p>
+                Protein:
+                <strong>{{ selectedItemToAdd.macronutrients.protein }}g</strong>
+              </p>
             </div>
             <h3 v-else class="text-center">Search for a food</h3>
           </div>
@@ -331,6 +357,9 @@ so between Breakfast section and lunch section a little more margin -->
 </template>
 
 <script>
+import Chart from "chart.js/auto";
+import { markRaw } from 'vue';
+
 export default {
   data() {
     return {
@@ -581,11 +610,51 @@ export default {
           snacks: "chocolate 200 cals",
         },
       },
+      macrosChart: null,
+      chartData: {
+        labels: ["Protein", "Carbohydrates", "Fat"],
+        datasets: [
+          {
+            label: "Macros",
+            // data: [{ value: 10 }, { value: 30 }, { value: 40 }],
+            data: [12, 19, 3],
+            backgroundColor: [
+              "rgb(255, 99, 132)",
+              "rgb(54, 162, 235)",
+              "rgb(255, 205, 86)",
+            ],
+            hoverOffset: 4,
+          },
+        ],
+      },
+      chartOptions: {
+        cutout: 50,
+        plugins: {
+          legend: {
+            display: false, // hide labels
+          },
+        },
+      },
     };
+  },
+  beforeUnmount () {
+    if (this.macrosChart) {
+      this.macrosChart.destroy();
+    }
   },
   mounted() {
     this.getDates();
     // this.isMounted = true;
+
+    this.createChart();
+    // const macros_chart = document.getElementById("macrosChart");
+    // let data = [{ value: 10 }, { value: 30 }, { value: 40 }];
+    // this.macrosChart = new Chart(macros_chart, {
+    //   type: "doughnut",
+
+    // });
+    // this.macrosChart;
+    // }
   },
   updated() {
     this.isUpdated = true;
@@ -652,6 +721,27 @@ export default {
     },
   },
   methods: {
+    createChart() {
+      const chart = new Chart(this.$refs["myChart"], {
+        type: "doughnut",
+        data: this.chartData,
+        options: this.chartOptions,
+      });
+      this.macrosChart = markRaw(chart);
+
+    },
+    updateChart() {
+      if (this.macrosChart) {
+
+        const newMacros = [];
+        for (const macro in this.selectedItemToAdd.macronutrients) {
+          newMacros.push(this.selectedItemToAdd.macronutrients[macro])
+          console.log(this.selectedItemToAdd.macronutrients[macro]);
+        }
+        this.macrosChart.data.datasets[0].data = newMacros;
+        this.macrosChart.update();
+      }
+    },
     getFoodData() {
       if (this.dateList != null && this.activeSlide !== null) {
         return this.foodData[this.dateList.at(this.activeSlide)];
@@ -784,6 +874,10 @@ export default {
     selectItem(index, item) {
       this.selectedItem = index;
       this.itemToAdd = item;
+
+      if (this.macrosChart) {
+        this.updateChart();
+      }
       console.log(index + ", " + item);
     },
     macorsSingleFoodItem() {
@@ -830,6 +924,34 @@ export default {
 </script>
 
 <style scoped>
+.relative {
+  position: relative;
+}
+
+.absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.text-center {
+  text-align: center;
+}
+
+p {
+  font-size: 1rem;
+  margin-bottom: 0;
+}
+
+.macroChartDiv {
+  height: 150px;
+}
+
+canvas {
+  margin: 0 auto;
+}
+
 .caloriesRemaining,
 .meal-time,
 .food-entry {
@@ -864,7 +986,7 @@ p.subtext {
 }
 
 .scrollable-list {
-  height: 300px;
+  height: 280px;
   /* height: 100% */
   /* width: 100px; */
   overflow-y: scroll;
@@ -902,8 +1024,8 @@ li {
 }
 
 .addFoodCol {
-  background-color: lightblue;
-  height: 350px;
+  /* background-color: lightblue; */
+  height: 330px;
 }
 
 .addFoodBtn {
@@ -925,10 +1047,6 @@ li {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
-}
-
-p {
-  margin-bottom: 0;
 }
 .diary div {
   background-color: white;
