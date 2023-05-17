@@ -6,9 +6,8 @@
       </div>
     </div> -->
 
-    <div class="card">
-      <!-- <div v-if="showCard" class="card"> -->
-
+    <!-- <div class="card"> -->
+    <div v-show="showCard" class="card">
       <div class="card-header">
         <h4 class="mb-0" style="text-align: center">{{ addCategory }}</h4>
       </div>
@@ -37,37 +36,46 @@
             </div>
           </div>
           <div class="mb-0 col-md-6 addFoodCol">
-            <!-- TODO: replace this with Chart.js with data of current food item -->
-            <!-- <div class="macroChartDiv">
-              <canvas id="macrosChart" width="170"></canvas>
-            </div> -->
-
-            <div class="relative" style="height: 150px">
-              <canvas ref="myChart" id="macrosChart"></canvas>
+            <div class="relative">
+              <canvas ref="myChart" class="mx-0" id="macrosChart"></canvas>
               <div class="absolute-center text-center">
                 <p style="font-size: 1.2rem" v-if="selectedItem > -1">
                   <strong>{{ selectedItemToAdd.calories }}</strong>
                 </p>
-                <p>cal</p>
+                <p v-if="selectedItem > -1">cal</p>
               </div>
             </div>
 
             <div v-if="selectedItemToAdd">
-              <!-- <p>Calories: {{ selectedItemToAdd.calories }} cal</p> -->
+              <p><strong>{{ selectedItemToAdd.foodName }}</strong></p>
+              <!-- <p>Calories: <strong>{{ selectedItemToAdd.calories }}</strong></p> -->
               <p>
                 Carbohydrate:
+                <span style="float: right;">
                 <strong
                   >{{ selectedItemToAdd.macronutrients.carbohydrates }}g</strong
-                >
+                ></span>
               </p>
               <p>
                 Fat:
+                <span style="float: right;">
                 <strong>{{ selectedItemToAdd.macronutrients.fat }}g</strong>
+              </span>
               </p>
               <p>
                 Protein:
+                <span style="float: right;">
                 <strong>{{ selectedItemToAdd.macronutrients.protein }}g</strong>
+              </span>
               </p>
+              <p>Serving Size:
+                <span style="float: right;">
+                <strong>{{ selectedItemToAdd.unit }}</strong>
+                </span>
+              </p>
+              <!-- TODO: make number of servings input field and multiply the macros and
+              calories and serving size accordingly to the # of Servings e.g. 1.5 * 100g -->
+              <p>Servings:<input v-model="numServings" type="text" style="width: 50px; float: right;"></p>
             </div>
             <h3 v-else class="text-center">Search for a food</h3>
           </div>
@@ -127,10 +135,6 @@
       </button>
       <!-- carousel controls end-->
     </div>
-
-    <!-- TODO: less margin between food items and Meal-Category 
-  but a little margin between each food category
-so between Breakfast section and lunch section a little more margin -->
 
     <div class="container px-0">
       <div class="row">
@@ -358,7 +362,7 @@ so between Breakfast section and lunch section a little more margin -->
 
 <script>
 import Chart from "chart.js/auto";
-import { markRaw } from 'vue';
+import { markRaw } from "vue";
 
 export default {
   data() {
@@ -370,6 +374,7 @@ export default {
       userCalories: 3000, // TODO: change this to global variable, get from vuex store
       activeSlide: 0,
       isUpdated: false,
+      //TODO: get FoodList from store / bzw. fatsecretApi
       foodList: [
         {
           foodName: "Salmon",
@@ -472,9 +477,9 @@ export default {
           unit: "100g",
         },
       ],
-      //TODO: get these from store / bzw. fatsecretApi
       selectedItem: -1,
       itemToAdd: null,
+      numServings: 1,
       // push and retrive data by accessing the key using the date as a string
       // such as: 'Tue, 2. May 23' - I get this by calling: dateList.at(activeSlide)
       // TODO: store data exactly like this also in Firebase
@@ -633,11 +638,12 @@ export default {
           legend: {
             display: false, // hide labels
           },
+          
         },
       },
     };
   },
-  beforeUnmount () {
+  beforeUnmount() {
     if (this.macrosChart) {
       this.macrosChart.destroy();
     }
@@ -646,15 +652,7 @@ export default {
     this.getDates();
     // this.isMounted = true;
 
-    this.createChart();
-    // const macros_chart = document.getElementById("macrosChart");
-    // let data = [{ value: 10 }, { value: 30 }, { value: 40 }];
-    // this.macrosChart = new Chart(macros_chart, {
-    //   type: "doughnut",
-
-    // });
-    // this.macrosChart;
-    // }
+    // this.createChart();
   },
   updated() {
     this.isUpdated = true;
@@ -728,14 +726,12 @@ export default {
         options: this.chartOptions,
       });
       this.macrosChart = markRaw(chart);
-
     },
     updateChart() {
       if (this.macrosChart) {
-
         const newMacros = [];
         for (const macro in this.selectedItemToAdd.macronutrients) {
-          newMacros.push(this.selectedItemToAdd.macronutrients[macro])
+          newMacros.push(this.selectedItemToAdd.macronutrients[macro]);
           console.log(this.selectedItemToAdd.macronutrients[macro]);
         }
         this.macrosChart.data.datasets[0].data = newMacros;
@@ -817,7 +813,8 @@ export default {
           break;
       }
       this.showCard = true;
-      // document.body.style.overflow = "hidden"; // prevent scrolling
+
+      document.body.style.overflow = "hidden"; // prevent scrolling
     },
     closeCard() {
       // call the actual method, that adds a new item to the list
@@ -826,10 +823,15 @@ export default {
       this.itemToAdd = null;
       this.selectedItem = -1;
 
-      // document.body.style.overflow = "auto";
+      document.body.style.overflow = "auto";
     },
     pushItem(newEntry) {
-      console.log("newEntry to add: " + newEntry);
+      console.log("Active Date/Slide: " + this.dateList[this.activeSlide]); // add item to this date
+
+      console.log(this.foodData[this.dateList[this.activeSlide]][this.addCategory]);
+      this.foodData[this.dateList[this.activeSlide]][this.addCategory.toLowerCase()].push(newEntry);
+      console.log(this.foodData[this.dateList[this.activeSlide]][this.addCategory]);
+
     },
     macrosMeal(category) {
       let macros = {
@@ -874,6 +876,11 @@ export default {
     selectItem(index, item) {
       this.selectedItem = index;
       this.itemToAdd = item;
+
+      if (this.macrosChart) {
+        this.macrosChart.destroy();
+      }
+      this.createChart();
 
       if (this.macrosChart) {
         this.updateChart();
@@ -1015,8 +1022,8 @@ li {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 999;
-  width: 450px;
-  height: 450px;
+  width: 470px;
+  height: 470px;
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
