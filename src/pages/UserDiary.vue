@@ -47,35 +47,49 @@
             </div>
 
             <div v-if="selectedItemToAdd">
-              <p><strong>{{ selectedItemToAdd.foodName }}</strong></p>
+              <p>
+                <strong>{{ selectedItemToAdd.foodName }}</strong>
+              </p>
               <!-- <p>Calories: <strong>{{ selectedItemToAdd.calories }}</strong></p> -->
               <p>
                 Carbohydrate:
-                <span style="float: right;">
-                <strong
-                  >{{ selectedItemToAdd.macronutrients.carbohydrates }}g</strong
-                ></span>
+                <span style="float: right">
+                  <strong
+                    >{{
+                      selectedItemToAdd.macronutrients.carbohydrates
+                    }}g</strong
+                  ></span
+                >
               </p>
               <p>
                 Fat:
-                <span style="float: right;">
-                <strong>{{ selectedItemToAdd.macronutrients.fat }}g</strong>
-              </span>
+                <span style="float: right">
+                  <strong>{{ selectedItemToAdd.macronutrients.fat }}g</strong>
+                </span>
               </p>
               <p>
                 Protein:
-                <span style="float: right;">
-                <strong>{{ selectedItemToAdd.macronutrients.protein }}g</strong>
-              </span>
+                <span style="float: right">
+                  <strong
+                    >{{ selectedItemToAdd.macronutrients.protein }}g</strong
+                  >
+                </span>
               </p>
-              <p>Serving Size:
-                <span style="float: right;">
-                <strong>{{ selectedItemToAdd.unit }}</strong>
+              <p>
+                Serving Size:
+                <span style="float: right">
+                  <strong>{{ selectedItemToAdd.unit }}</strong>
                 </span>
               </p>
               <!-- TODO: make number of servings input field and multiply the macros and
               calories and serving size accordingly to the # of Servings e.g. 1.5 * 100g -->
-              <p>Servings:<input v-model="numServings" type="text" style="width: 50px; float: right;"></p>
+              <p>
+                Servings:<input
+                  v-model="numServings"
+                  type="text"
+                  style="width: 50px; float: right"
+                />
+              </p>
             </div>
             <h3 v-else class="text-center">Search for a food</h3>
           </div>
@@ -344,10 +358,44 @@
               </div>
 
               <!-- Totals -->
-              <div class="food-entry mt-4 mx-3">
+              <div
+                class="food-entry mt-0 mb-4 mx-3 px-3 py-2 align-items-center"
+              >
                 <p><strong>Totals</strong></p>
-                <p>Change or fix margins / paddings here</p>
                 <!-- <p>{{ foodItem && foodItem.snacks ? foodItem.snacks : 'No snack data available' }}</p> -->
+                <div class="tableContainer">
+                  <table class="text-center">
+                    <tr>
+                      <th></th>
+                      <th>Calories</th>
+                      <th>Carbohydrates</th>
+                      <th>Fat</th>
+                      <th>Protein</th>
+                    </tr>
+                    <tr>
+                      <td>Total</td>
+                      <td>1000</td>
+                      <td>150g</td>
+                      <td>40g</td>
+                      <td>80g</td>
+                    </tr>
+                    <tr>
+                      <td>Daily Goal</td>
+                      <td>2000</td>
+                      <td>200g</td>
+                      <td>60g</td>
+                      <td>100g</td>
+                    </tr>
+                    <tr>
+                      <td>Left</td>
+                      <td>1000</td>
+                      <td>50g</td>
+                      <td>20g</td>
+                      <td>20g</td>
+                    </tr>
+                  </table>
+                </div>
+                <canvas ref="totalsChart"></canvas>
               </div>
             </div>
           </div>
@@ -374,6 +422,7 @@ export default {
       userCalories: 3000, // TODO: change this to global variable, get from vuex store
       activeSlide: 0,
       isUpdated: false,
+      dailyGoal: 3000, //TODO: get this from Store
       //TODO: get FoodList from store / bzw. fatsecretApi
       foodList: [
         {
@@ -638,7 +687,6 @@ export default {
           legend: {
             display: false, // hide labels
           },
-          
         },
       },
     };
@@ -826,12 +874,36 @@ export default {
       document.body.style.overflow = "auto";
     },
     pushItem(newEntry) {
-      console.log("Active Date/Slide: " + this.dateList[this.activeSlide]); // add item to this date
+      // console.log("Active Date/Slide: " + this.dateList[this.activeSlide]); // add item to this date
 
-      console.log(this.foodData[this.dateList[this.activeSlide]][this.addCategory]);
-      this.foodData[this.dateList[this.activeSlide]][this.addCategory.toLowerCase()].push(newEntry);
-      console.log(this.foodData[this.dateList[this.activeSlide]][this.addCategory]);
+      let newUnit = "100g";
+      if (this.numServings !== 1) {
+        newUnit =
+          Number(
+            Math.floor(newUnit.split("g")[0] * this.numServings)
+          ).toString() + "g";
+      }
 
+      const editedEntry = {
+        ...newEntry,
+        calories: newEntry.calories * this.numServings,
+        macronutrients: {
+          carbohydrates: Math.floor(
+            newEntry.macronutrients.carbohydrates * this.numServings
+          ),
+          fat: Math.floor(newEntry.macronutrients.fat * this.numServings),
+          protein: Math.floor(
+            newEntry.macronutrients.protein * this.numServings
+          ),
+        },
+        unit: newUnit,
+      };
+      // console.log(editedEntry);
+      // console.log(this.foodData[this.dateList[this.activeSlide]][this.addCategory]);
+      this.foodData[this.dateList[this.activeSlide]][
+        this.addCategory.toLowerCase()
+      ].push(editedEntry);
+      this.numServings = 1;
     },
     macrosMeal(category) {
       let macros = {
@@ -926,11 +998,75 @@ export default {
       }
       return calTotal;
     },
+    createTotalsChart() {
+
+      const pieChart = new Chart(this.$refs["totalsChart"], {
+        type: "pie",
+        data: {
+          // labels: ["Red", "Blue", "Yellow"],
+          datasets: [
+            {
+              label: "My First Dataset",
+              data: [300, 50, 100],
+              backgroundColor: [
+                "rgb(255, 99, 132)",
+                "rgb(54, 162, 235)",
+                "rgb(255, 205, 86)",
+              ],
+              hoverOffset: 4,
+            },
+          ],
+        },
+        options: {},
+      });
+      pieChart;
+    },
   },
 };
 </script>
 
 <style scoped>
+/* totals table */
+.tableContainer {
+  display: flex;
+  justify-content: center;
+}
+
+table {
+  width: 70%; /* Adjust the width as needed */
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+th,
+td {
+  padding: 10px;
+  border: 1px solid black;
+}
+
+th:first-child,
+td:first-child {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+  background-color: white;
+  border: none;
+}
+
+th {
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
 .relative {
   position: relative;
 }
