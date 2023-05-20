@@ -6,7 +6,6 @@
       </div>
     </div> -->
 
-    <!-- <div class="card"> -->
     <div v-show="showCard" class="card">
       <div class="card-header">
         <h4 class="mb-0" style="text-align: center">{{ addCategory }}</h4>
@@ -104,6 +103,16 @@
       </button>
     </div>
 
+    <div v-show="showDetailsFood" class="macroCard">
+      <p style="text-align: center;"><strong>{{ selectedFood ? selectedFood.foodName : "Loading" }}</strong></p>
+      <p class="aligned-p"><span class="left-text">Calories:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.calories : "Loading" }} cal</strong></span></p>
+      <p class="aligned-p"><span class="left-text">Carbohydrates:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.macronutrients.carbohydrates : "Loadin" }}g</strong></span></p>
+      <p class="aligned-p"><span class="left-text">Fat:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.macronutrients.fat : "Loadin" }}g</strong></span></p>
+      <p class="aligned-p"><span class="left-text">Protein:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.macronutrients.protein : "Loadin" }}g</strong></span></p>
+      <p class="aligned-p"><span class="left-text">Serving:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.unit : "Loading" }}</strong></span></p>
+      <button @click="closeMacroCard" type="button" class="btn btn-success text-center">Okay</button>
+    </div>
+
     <!-- carousel -->
     <div
       id="carouselExampleDark"
@@ -194,6 +203,8 @@
                 v-for="item in breakfastItems"
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+                @click="macrosFoodItem(item)"
+                style="cursor: pointer; pointer-events: auto;"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -230,6 +241,8 @@
                 v-for="item in lunchItems"
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+                @click="macrosFoodItem(item)"
+                style="cursor: pointer; pointer-events: auto;"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -266,6 +279,8 @@
                 v-for="item in dinnerItems"
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+                @click="macrosFoodItem(item)"
+                style="cursor: pointer; pointer-events: auto;"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -303,6 +318,8 @@
                 v-for="item in snackItems"
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
+                @click="macrosFoodItem(item)"
+                style="cursor: pointer; pointer-events: auto;"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -395,7 +412,7 @@
                     </tr>
                   </table>
                 </div>
-                <canvas ref="totalsChart"></canvas>
+                <canvas class="my-3" ref="totalsChart"></canvas>
               </div>
             </div>
           </div>
@@ -417,6 +434,8 @@ export default {
     return {
       dateList: [],
       showCard: false,
+      showDetailsFood: false,
+      selectedFood: null,// used to show details of an already added food entry
       addCategory: "",
       inputValue: "", //TODO: use this to search for a food in the database
       userCalories: 3000, // TODO: change this to global variable, get from vuex store
@@ -689,6 +708,9 @@ export default {
           },
         },
       },
+      totalsChart: null,
+      totalsData: {},
+      totalsOptions: {},
     };
   },
   beforeUnmount() {
@@ -698,9 +720,8 @@ export default {
   },
   mounted() {
     this.getDates();
+    this.createTotalsChart();
     // this.isMounted = true;
-
-    // this.createChart();
   },
   updated() {
     this.isUpdated = true;
@@ -959,12 +980,25 @@ export default {
       }
       console.log(index + ", " + item);
     },
-    macorsSingleFoodItem() {
+    macrosFoodItem(item) {
       //TODO: make individual food items spawn a pop up card,
       // which can be clicked away
       // with the info and macros to that food item
       //TODO: use same function as in macrosMeal()
       // or just call this function from inside macrosMeal()
+      this.selectedFood = item;
+      this.showDetailsFood = true;
+
+      console.log("display macros for food item");
+      document.body.style.overflow = "hidden"; // prevent scrolling
+
+
+    },
+    closeMacroCard() {
+      this.showDetailsFood = false;
+      this.selectedFood = null;
+      document.body.style.overflow = "auto"; // prevent scrolling
+
     },
     calorieTotals(category) {
       // category is 'breakfast', 'lunch' etc.
@@ -999,27 +1033,43 @@ export default {
       return calTotal;
     },
     createTotalsChart() {
-
-      const pieChart = new Chart(this.$refs["totalsChart"], {
+      const chart = new Chart(this.$refs["totalsChart"], {
         type: "pie",
         data: {
-          // labels: ["Red", "Blue", "Yellow"],
+          labels: ["Carbohydrates", "Fat", "Protein"],
           datasets: [
             {
-              label: "My First Dataset",
               data: [300, 50, 100],
               backgroundColor: [
-                "rgb(255, 99, 132)",
-                "rgb(54, 162, 235)",
-                "rgb(255, 205, 86)",
+                "#00B4BD", // carbs
+                "#FF2523", // fat
+                "#C829D6", // protein
               ],
               hoverOffset: 4,
             },
           ],
         },
-        options: {},
+        options: {
+          plugins: {
+            tooltip: {
+              displayColors: false,
+              displayData: false,
+              callbacks: {
+                title: function () {
+                  return ""; // Remove the default title
+                },
+                label: (context) => {
+                  const label = context.label || "";
+                  const total = context.dataset.data.reduce((a, b) => a + b);
+                  const percentage = (context.dataset.data[context.dataIndex] / total) * 100;
+                  return `${label}: ${Math.round(percentage)}%`;
+                },
+              },
+            },
+          },
+        },
       });
-      pieChart;
+      this.totalsChart = markRaw(chart);
     },
   },
 };
@@ -1099,7 +1149,7 @@ canvas {
 .meal-time,
 .food-entry {
   border-radius: 5px;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
   border: none;
 }
 .calTotalText {
@@ -1164,6 +1214,47 @@ li {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   /* transition: transform 0.3s ease-in-out; */
+}
+
+.macroCard {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+  width: 250px;
+  height: 250px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  /* transition: transform 0.3s ease-in-out; */
+}
+
+.macroCard {
+  padding: 10px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.aligned-p {
+  display: flex;
+  justify-content: space-between;
+}
+
+.left-text {
+  text-align: left;
+}
+
+.right-text {
+  text-align: right;
+}
+
+.macroCard p {
+  margin: 5px 0;
+}
+
+.macroCard button {
+  margin-top: 10px;
 }
 
 .addFoodCol {
