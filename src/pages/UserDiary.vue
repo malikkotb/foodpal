@@ -6,6 +6,13 @@
       </div>
     </div> -->
 
+
+
+    <!-- TODO: add picture
+    from nutritionix api -->
+
+
+    <!-- addFoodCard -->
     <div v-show="showCard" class="card">
       <div class="card-header">
         <h4 class="mb-0" style="text-align: center">{{ addCategory }}</h4>
@@ -433,6 +440,7 @@ export default {
   data() {
     return {
       dateList: [],
+      loadingSpinner: false,
       showCard: false,
       showDetailsFood: false,
       selectedFood: null,// used to show details of an already added food entry
@@ -885,6 +893,16 @@ export default {
 
       document.body.style.overflow = "hidden"; // prevent scrolling
     },
+    async fetchData() {
+      try {
+        this.loadingSpinner = true;
+        await this.$store.dispatch("fetchFoodData");
+        this.loadingSpinner = false;
+        console.log("Food data fetched");
+      } catch (error) {
+        console.error("Error fetching food data:", error);
+      }
+    },
     closeCard() {
       // call the actual method, that adds a new item to the list
       this.pushItem(this.itemToAdd);
@@ -991,8 +1009,6 @@ export default {
 
       console.log("display macros for food item");
       document.body.style.overflow = "hidden"; // prevent scrolling
-
-
     },
     closeMacroCard() {
       this.showDetailsFood = false;
