@@ -6,11 +6,12 @@
       </div>
     </div> -->
 
-
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
 
     <!-- TODO: add picture
     from nutritionix api -->
-
 
     <!-- addFoodCard -->
     <div v-show="showCard" class="card">
@@ -111,13 +112,64 @@
     </div>
 
     <div v-show="showDetailsFood" class="macroCard">
-      <p style="text-align: center;"><strong>{{ selectedFood ? selectedFood.foodName : "Loading" }}</strong></p>
-      <p class="aligned-p"><span class="left-text">Calories:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.calories : "Loading" }} cal</strong></span></p>
-      <p class="aligned-p"><span class="left-text">Carbohydrates:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.macronutrients.carbohydrates : "Loadin" }}g</strong></span></p>
-      <p class="aligned-p"><span class="left-text">Fat:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.macronutrients.fat : "Loadin" }}g</strong></span></p>
-      <p class="aligned-p"><span class="left-text">Protein:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.macronutrients.protein : "Loadin" }}g</strong></span></p>
-      <p class="aligned-p"><span class="left-text">Serving:</span><span class="right-text"><strong>{{ selectedFood ? selectedFood.unit : "Loading" }}</strong></span></p>
-      <button @click="closeMacroCard" type="button" class="btn btn-success text-center">Okay</button>
+      <p style="text-align: center">
+        <strong>{{ selectedFood ? selectedFood.foodName : "Loading" }}</strong>
+      </p>
+      <p class="aligned-p">
+        <span class="left-text">Calories:</span
+        ><span class="right-text"
+          ><strong
+            >{{ selectedFood ? selectedFood.calories : "Loading" }} cal</strong
+          ></span
+        >
+      </p>
+      <p class="aligned-p">
+        <span class="left-text">Carbohydrates:</span
+        ><span class="right-text"
+          ><strong
+            >{{
+              selectedFood
+                ? selectedFood.macronutrients.carbohydrates
+                : "Loadin"
+            }}g</strong
+          ></span
+        >
+      </p>
+      <p class="aligned-p">
+        <span class="left-text">Fat:</span
+        ><span class="right-text"
+          ><strong
+            >{{
+              selectedFood ? selectedFood.macronutrients.fat : "Loadin"
+            }}g</strong
+          ></span
+        >
+      </p>
+      <p class="aligned-p">
+        <span class="left-text">Protein:</span
+        ><span class="right-text"
+          ><strong
+            >{{
+              selectedFood ? selectedFood.macronutrients.protein : "Loadin"
+            }}g</strong
+          ></span
+        >
+      </p>
+      <p class="aligned-p">
+        <span class="left-text">Serving:</span
+        ><span class="right-text"
+          ><strong>{{
+            selectedFood ? selectedFood.unit : "Loading"
+          }}</strong></span
+        >
+      </p>
+      <button
+        @click="closeMacroCard"
+        type="button"
+        class="btn btn-success text-center"
+      >
+        Okay
+      </button>
     </div>
 
     <!-- carousel -->
@@ -211,7 +263,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto;"
+                style="cursor: pointer; pointer-events: auto"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -249,7 +301,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto;"
+                style="cursor: pointer; pointer-events: auto"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -287,7 +339,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto;"
+                style="cursor: pointer; pointer-events: auto"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -326,7 +378,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto;"
+                style="cursor: pointer; pointer-events: auto"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -443,7 +495,7 @@ export default {
       loadingSpinner: false,
       showCard: false,
       showDetailsFood: false,
-      selectedFood: null,// used to show details of an already added food entry
+      selectedFood: null, // used to show details of an already added food entry
       addCategory: "",
       inputValue: "", //TODO: use this to search for a food in the database
       userCalories: 3000, // TODO: change this to global variable, get from vuex store
@@ -1014,7 +1066,6 @@ export default {
       this.showDetailsFood = false;
       this.selectedFood = null;
       document.body.style.overflow = "auto"; // prevent scrolling
-
     },
     calorieTotals(category) {
       // category is 'breakfast', 'lunch' etc.
@@ -1077,7 +1128,8 @@ export default {
                 label: (context) => {
                   const label = context.label || "";
                   const total = context.dataset.data.reduce((a, b) => a + b);
-                  const percentage = (context.dataset.data[context.dataIndex] / total) * 100;
+                  const percentage =
+                    (context.dataset.data[context.dataIndex] / total) * 100;
                   return `${label}: ${Math.round(percentage)}%`;
                 },
               },
