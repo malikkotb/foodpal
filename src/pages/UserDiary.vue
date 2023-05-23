@@ -9,6 +9,7 @@
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
+    <p>{{  searchFoods }}</p>
 
     <!-- TODO: add picture
     from nutritionix api -->
@@ -787,6 +788,9 @@ export default {
     this.isUpdated = true;
   },
   computed: {
+    searchFoods() {
+      return this.inputValue;
+    },
     selectedItemToAdd() {
       // currently selected item in the list -> for displaying info about that food
       return this.foodList[this.selectedItem];
