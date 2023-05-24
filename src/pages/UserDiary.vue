@@ -9,8 +9,6 @@
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
-    <p>{{  searchFoods }}</p>
-
     <!-- TODO: add picture
     from nutritionix api -->
 
@@ -33,7 +31,7 @@
             <div class="scrollable-list">
               <ul>
                 <li
-                  v-for="(item, index) in foodList"
+                  v-for="(item, index) in filteredList"
                   :key="index"
                   @click="selectItem(index, item)"
                   :class="{ selected: index === selectedItem }"
@@ -788,8 +786,11 @@ export default {
     this.isUpdated = true;
   },
   computed: {
-    searchFoods() {
-      return this.inputValue;
+    filteredList() {
+      if(this.inputValue != "") {
+        return this.foodList.filter(item => item.foodName.toLowerCase().includes(this.inputValue.toLowerCase()))
+      }
+      return this.foodList;
     },
     selectedItemToAdd() {
       // currently selected item in the list -> for displaying info about that food
@@ -999,6 +1000,7 @@ export default {
         this.addCategory.toLowerCase()
       ].push(editedEntry);
       this.numServings = 1;
+      this.macrosChart.destroy(); // reset the macroChart
     },
     macrosMeal(category) {
       let macros = {
