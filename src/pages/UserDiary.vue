@@ -6,9 +6,6 @@
       </div>
     </div> -->
 
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
     <!-- TODO: add picture
     from nutritionix api -->
 
@@ -29,7 +26,15 @@
               placeholder="Search..."
             />
             <div class="scrollable-list">
-              <ul>
+              <div
+                class="d-flex justify-content-center align-items-center h-100"
+                v-if="searchStatus"
+              >
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <ul v-else>
                 <li
                   v-for="(item, index) in filteredList"
                   :key="index"
@@ -101,6 +106,7 @@
           </div>
         </div>
       </div>
+      <button class="btn btn-primary" @click="fetchData()">Search</button>
       <button
         class="addFoodBtn"
         v-bind:disabled="!(selectedItem > -1)"
@@ -217,7 +223,7 @@
       <!-- carousel controls end-->
     </div>
 
-    <div class="container px-0">
+    <div class="container px-0" id="foodDiary">
       <div class="row">
         <div class="col-1">
           <!-- First column -->
@@ -490,8 +496,9 @@ import { markRaw } from "vue";
 export default {
   data() {
     return {
+      foodSearchResults: null,
       dateList: [],
-      loadingSpinner: false,
+      searchStatus: false, //TODO: implement this in search function
       showCard: false,
       showDetailsFood: false,
       selectedFood: null, // used to show details of an already added food entry
@@ -787,8 +794,12 @@ export default {
   },
   computed: {
     filteredList() {
-      if(this.inputValue != "") {
-        return this.foodList.filter(item => item.foodName.toLowerCase().includes(this.inputValue.toLowerCase()))
+      // searchStatus mit einbeziehen
+      if (this.inputValue != "") {
+        // this.searchStatus = true;
+        return this.foodList.filter((item) =>
+          item.foodName.toLowerCase().includes(this.inputValue.toLowerCase())
+        );
       }
       return this.foodList;
     },
@@ -948,13 +959,14 @@ export default {
       }
       this.showCard = true;
 
+      // document.getElementById('foodDiary').style.pointerEvents = 'none';
       document.body.style.overflow = "hidden"; // prevent scrolling
     },
     async fetchData() {
       try {
-        this.loadingSpinner = true;
-        await this.$store.dispatch("fetchFoodData");
-        this.loadingSpinner = false;
+        this.searchStatus = true;
+        await this.fetchFoodData("steak"); // input is query
+        this.searchStatus = false;
         console.log("Food data fetched");
       } catch (error) {
         console.error("Error fetching food data:", error);
@@ -968,6 +980,7 @@ export default {
       this.selectedItem = -1;
 
       document.body.style.overflow = "auto";
+      // document.getElementById('foodDiary').style.pointerEvents = 'auto';
     },
     pushItem(newEntry) {
       // console.log("Active Date/Slide: " + this.dateList[this.activeSlide]); // add item to this date
@@ -1144,6 +1157,82 @@ export default {
         },
       });
       this.totalsChart = markRaw(chart);
+    },
+    async fetchFoodData(query) {
+      const instantUrl = `https://trackapi.nutritionix.com/v2/search/instant?query=${query}`;
+
+      let foodSearchResults = []; // array of objects for each food object
+      // including: name, qunatity, macros and thumbnail picture
+
+      const appId = "d04417ed";
+      const appKey = "97c68d598f0b2c81ba6104574b4e93ed";
+      // Make the request to the instant search endpoint
+      await fetch(instantUrl, {
+        headers: {
+          "x-app-id": appId,
+          "x-app-key": appKey,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          // console.log("Search Results:", data.common); // only getting common foods right now, not branded ones
+
+          // TODO: change to i < 10 -> to only get top 10 results
+          for (let i = 0; i < 6; i++) {
+            const foodItem = {
+              food_name: data.common[i].food_name,
+              photo: data.common[i].photo.thumb,
+            };
+            foodSearchResults.push(foodItem);
+          }
+
+          // TODO: get macros
+          // Iterate over the search results and fetch macronutrient details for each result
+          for (let i = 0; i < 6; i++) {
+            // Make the request to the nutrient details endpoint for each result
+            const nutrientUrl = `https://trackapi.nutritionix.com/v2/natural/nutrients`;
+            const macrosQuery = `${foodSearchResults[i].food_name}`;
+            fetch(nutrientUrl, {
+              method: "POST",
+              headers: {
+                "x-app-id": appId,
+                "x-app-key": appKey,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ query: macrosQuery }), // nix_item_id: nixItemId
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                // Get macros, calories and other details
+
+                const foodItemFinal = {
+                  ...foodSearchResults[i],
+                  calories: data.foods["0"].nf_calories,
+                  macronutrients: {
+                    fat: data.foods["0"].nf_total_fat,
+                    carbohydrates: data.foods["0"].nf_total_carbohydrate,
+                    protein: data.foods["0"].nf_protein,
+                  },
+                  serving_weight: data.foods["0"].serving_weight_grams,
+                  serving_qty: data.foods["0"].serving_qty,
+                };
+
+                foodSearchResults[i] = foodItemFinal;
+              })
+              .catch((error) => {
+                // Handle any errors
+                console.error("Error fetching macronutrient data:", error);
+              });
+          }
+        })
+        .catch((error) => {
+          // Handle any errors
+          console.error("Error fetching search results:", error);
+        });
+
+      console.log("FoodData Array: ");
+      console.log(foodSearchResults);
     },
   },
 };
