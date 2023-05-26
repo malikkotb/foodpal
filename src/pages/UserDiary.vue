@@ -17,14 +17,22 @@
       <div class="card-body px-4 pb-0">
         <div class="row">
           <div class="mb-0 col-md-6 addFoodCol">
-            <!-- <label for="inputField" class="form-label">Input Field</label> -->
-            <input
-              type="text"
-              class="form-control"
-              id="inputField"
-              v-model="inputValue"
-              placeholder="Search..."
-            />
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search..."
+                v-model="inputValue"
+              />
+              <button
+                @click="fetchData()"
+                class="btn btn-primary"
+                type="button"
+              >
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+
             <div class="scrollable-list">
               <div
                 class="d-flex justify-content-center align-items-center h-100"
@@ -35,6 +43,9 @@
                 </div>
               </div>
               <ul v-else>
+                <!-- TODO: 
+                  hier durch die foodSearchResults iterieren
+                -->
                 <li
                   v-for="(item, index) in filteredList"
                   :key="index"
@@ -106,7 +117,6 @@
           </div>
         </div>
       </div>
-      <button class="btn btn-primary" @click="fetchData()">Search</button>
       <button
         class="addFoodBtn"
         v-bind:disabled="!(selectedItem > -1)"
@@ -964,10 +974,14 @@ export default {
     },
     async fetchData() {
       try {
-        this.searchStatus = true;
-        await this.fetchFoodData("steak"); // input is query
-        this.searchStatus = false;
-        console.log("Food data fetched");
+        if (this.inputValue !== "") {
+          this.searchStatus = true;
+          await this.fetchFoodData(this.inputValue); // input is query
+          this.searchStatus = false;
+          console.log("Food data fetched, global search results: ");
+          console.log(this.foodSearchResults);
+          this.inputValue = "";
+        }
       } catch (error) {
         console.error("Error fetching food data:", error);
       }
@@ -1230,9 +1244,7 @@ export default {
           // Handle any errors
           console.error("Error fetching search results:", error);
         });
-
-      console.log("FoodData Array: ");
-      console.log(foodSearchResults);
+      this.foodSearchResults = foodSearchResults;
     },
   },
 };
