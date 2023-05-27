@@ -14,21 +14,6 @@
         of the current day by retrieving data from firebase using
         today.getDate()
       </p>
-      <!-- Generate effects for adding food and deleting food (transitions), like
-        the card comes in from the left and slides out through the right AND
-        when you hover over a card it zooms in a little and then you can press
-        on the card to see the details of that food item -->
-
-      <!-- <div class="col-md-6" style="display: inline-block">
-        <div class="card mb-4">
-        <div style="text-align: center; float:none">
-          <h2 class="sectiontext">Top 10 Items</h2>
-          <br />
-          <canvas id="calorieChart"></canvas>
-          </div>
-        </div>
-      </div> -->
-
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-5">

@@ -43,19 +43,18 @@
                 </div>
               </div>
               <ul v-else>
-                <!-- TODO: 
-                  hier durch die foodSearchResults iterieren
-                -->
+                <!-- TODO: hier durch die foodSearchResults  -->
                 <li
                   v-for="(item, index) in filteredList"
                   :key="index"
                   @click="selectItem(index, item)"
                   :class="{ selected: index === selectedItem }"
                 >
-                  {{ item.foodName }}
+                  {{ capitalizeLetter(item.foodName) }}
                 </li>
               </ul>
             </div>
+            <button class="btn btn-primary" @click="showFoodList">Show</button>
           </div>
           <div class="mb-0 col-md-6 addFoodCol">
             <div class="relative">
@@ -70,7 +69,7 @@
 
             <div v-if="selectedItemToAdd">
               <p>
-                <strong>{{ selectedItemToAdd.foodName }}</strong>
+                <strong>{{ capitalizeLetter(selectedItemToAdd.foodName) }}</strong>
               </p>
               <!-- <p>Calories: <strong>{{ selectedItemToAdd.calories }}</strong></p> -->
               <p>
@@ -100,7 +99,7 @@
               <p>
                 Serving Size:
                 <span style="float: right">
-                  <strong>{{ selectedItemToAdd.unit }}</strong>
+                  <strong>{{ selectedItemToAdd.serving_weight }}</strong>
                 </span>
               </p>
               <!-- TODO: make number of servings input field and multiply the macros and
@@ -506,19 +505,18 @@ import { markRaw } from "vue";
 export default {
   data() {
     return {
-      foodSearchResults: null,
+      foodSearchResults: [],
       dateList: [],
-      searchStatus: false, //TODO: implement this in search function
+      searchStatus: false,
       showCard: false,
       showDetailsFood: false,
       selectedFood: null, // used to show details of an already added food entry
       addCategory: "",
-      inputValue: "", //TODO: use this to search for a food in the database
-      userCalories: 3000, // TODO: change this to global variable, get from vuex store
+      inputValue: "",
+      userCalories: 3000, // TODO: change this to global variable, get from firebase user account
       activeSlide: 0,
       isUpdated: false,
       dailyGoal: 3000, //TODO: get this from Store
-      //TODO: get FoodList from store / bzw. fatsecretApi
       foodList: [
         {
           foodName: "Salmon",
@@ -804,18 +802,21 @@ export default {
   },
   computed: {
     filteredList() {
-      // searchStatus mit einbeziehen
-      if (this.inputValue != "") {
-        // this.searchStatus = true;
-        return this.foodList.filter((item) =>
-          item.foodName.toLowerCase().includes(this.inputValue.toLowerCase())
-        );
+      if (this.inputValue != "" && this.foodSearchResults != null) {
+        return this.foodSearchResults;
+        // return this.foodList.filter((item) =>
+        //   item.foodName.toLowerCase().includes(this.inputValue.toLowerCase())
+        // );
       }
       return this.foodList;
     },
     selectedItemToAdd() {
       // currently selected item in the list -> for displaying info about that food
-      return this.foodList[this.selectedItem];
+      if (this.foodSearchResults.length > 0) {
+        return this.foodSearchResults[this.selectedItem];
+      } else {
+        return this.foodList[this.selectedItem];
+      }
     },
     breakfastItems() {
       if (this.dateList && this.activeSlide !== null) {
@@ -874,6 +875,20 @@ export default {
     },
   },
   methods: {
+    showFoodList() {
+      console.log(this.foodSearchResults);
+      for (let i = 0; i < this.foodSearchResults.length; i++) {
+        console.log("");
+        console.log(this.foodSearchResults[i].foodName);
+        console.log(this.foodSearchResults[i].macronutrients);
+        console.log(this.foodSearchResults[i].calories);
+        console.log(this.foodSearchResults[i].serving_qty);
+        console.log(this.foodSearchResults[i].serving_weight);
+      }
+    },
+    capitalizeLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    },
     createChart() {
       const chart = new Chart(this.$refs["myChart"], {
         type: "doughnut",
@@ -980,7 +995,7 @@ export default {
           this.searchStatus = false;
           console.log("Food data fetched, global search results: ");
           console.log(this.foodSearchResults);
-          this.inputValue = "";
+          // this.inputValue = "";
         }
       } catch (error) {
         console.error("Error fetching food data:", error);
@@ -998,7 +1013,8 @@ export default {
     },
     pushItem(newEntry) {
       // console.log("Active Date/Slide: " + this.dateList[this.activeSlide]); // add item to this date
-
+      console.log("Object.keys: " + Object.keys(newEntry));
+      console.log("Object.values: " + Object.values(newEntry));
       let newUnit = "100g";
       if (this.numServings !== 1) {
         newUnit =
@@ -1006,14 +1022,11 @@ export default {
             Math.floor(newUnit.split("g")[0] * this.numServings)
           ).toString() + "g";
       }
-
       const editedEntry = {
         ...newEntry,
         calories: newEntry.calories * this.numServings,
         macronutrients: {
-          carbohydrates: Math.floor(
-            newEntry.macronutrients.carbohydrates * this.numServings
-          ),
+          carbohydrates: Math.floor(newEntry.macronutrients.fat * this.numServings),
           fat: Math.floor(newEntry.macronutrients.fat * this.numServings),
           protein: Math.floor(
             newEntry.macronutrients.protein * this.numServings
@@ -1021,6 +1034,8 @@ export default {
         },
         unit: newUnit,
       };
+      console.log("but this isnt");
+
       // console.log(editedEntry);
       // console.log(this.foodData[this.dateList[this.activeSlide]][this.addCategory]);
       this.foodData[this.dateList[this.activeSlide]][
@@ -1070,8 +1085,17 @@ export default {
       // return macros;
     },
     selectItem(index, item) {
+
+      // TODO: for some weird reason,
+      // the first time u select an item -> all the data is not passed over
+      // but after the second time all the data does get passed over
       this.selectedItem = index;
+      console.log("index: " + index);
       this.itemToAdd = item;
+      console.log("Keys in item: ");
+      for(let i in item) {
+        console.log(i);
+      }      
 
       if (this.macrosChart) {
         this.macrosChart.destroy();
@@ -1193,20 +1217,20 @@ export default {
           // console.log("Search Results:", data.common); // only getting common foods right now, not branded ones
 
           // TODO: change to i < 10 -> to only get top 10 results
-          for (let i = 0; i < 6; i++) {
+          for (let i = 0; i < 3; i++) {
             const foodItem = {
-              food_name: data.common[i].food_name,
+              foodName: data.common[i].food_name,
               photo: data.common[i].photo.thumb,
             };
             foodSearchResults.push(foodItem);
           }
 
-          // TODO: get macros
+          // TODO: change to i < 10 -> to only get top 10 results
           // Iterate over the search results and fetch macronutrient details for each result
-          for (let i = 0; i < 6; i++) {
+          for (let i = 0; i < 3; i++) {
             // Make the request to the nutrient details endpoint for each result
             const nutrientUrl = `https://trackapi.nutritionix.com/v2/natural/nutrients`;
-            const macrosQuery = `${foodSearchResults[i].food_name}`;
+            const macrosQuery = `${foodSearchResults[i].foodName}`;
             fetch(nutrientUrl, {
               method: "POST",
               headers: {
