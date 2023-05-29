@@ -47,14 +47,13 @@
                 <li
                   v-for="(item, index) in filteredList"
                   :key="index"
-                  @click="selectItem(index, item)"
+                  @click="selectItem(index)"
                   :class="{ selected: index === selectedItem }"
                 >
                   {{ capitalizeLetter(item.foodName) }}
                 </li>
               </ul>
             </div>
-            <button class="btn btn-primary" @click="showFoodList">Show</button>
           </div>
           <div class="mb-0 col-md-6 addFoodCol">
             <div class="relative">
@@ -69,7 +68,9 @@
 
             <div v-if="selectedItemToAdd">
               <p>
-                <strong>{{ capitalizeLetter(selectedItemToAdd.foodName) }}</strong>
+                <strong>{{
+                  capitalizeLetter(selectedItemToAdd.foodName)
+                }}</strong>
               </p>
               <!-- <p>Calories: <strong>{{ selectedItemToAdd.calories }}</strong></p> -->
               <p>
@@ -99,7 +100,13 @@
               <p>
                 Serving Size:
                 <span style="float: right">
-                  <strong>{{ selectedItemToAdd.serving_weight }}</strong>
+                  <strong
+                    >{{
+                      selectedItemToAdd.serving_weight
+                        ? selectedItemToAdd.serving_weight
+                        : 100
+                    }}g</strong
+                  >
                 </span>
               </p>
               <!-- TODO: make number of servings input field and multiply the macros and
@@ -177,6 +184,7 @@
           }}</strong></span
         >
       </p>
+      <!-- <img :src="currentFoodPicture" height="200" width="200" alt="" /> -->
       <button
         @click="closeMacroCard"
         type="button"
@@ -251,10 +259,36 @@
                   </p>
                 </div>
                 <div class="calTotalDay">
-                  <h6 class="calTotalText">
-                    300__ - 2543___ + 300_______ = ____400_____
-                  </h6>
-                  <p class="calSubtext">Goal Food Exercise Remaining</p>
+                  <div class="calsRemaining">
+                    <p>
+                      <strong>3000</strong><br /><span class="subtext"
+                        >Goal</span
+                      >
+                    </p>
+                  </div>
+                  <div class="calsRemaining"><p>+</p></div>
+                  <div class="calsRemaining">
+                    <p>
+                      <strong>2543</strong><br /><span class="subtext"
+                        >Food</span
+                      >
+                    </p>
+                  </div>
+                  <div class="calsRemaining"><p>-</p></div>
+                  <div class="calsRemaining">
+                    <p>
+                      <strong>300</strong><br /><span class="subtext"
+                        >Exercise</span
+                      >
+                    </p>
+                  </div>
+                  <div class="calsRemaining"><p>=</p></div>
+                  <div class="calsRemaining">
+                    <p>
+                      <span style="color: green; font-weight: bold">400</span
+                      ><br /><span class="subtext">Remaining</span>
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -277,7 +311,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto"
+                :style="foodEntryStyle"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -315,7 +349,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto"
+                :style="foodEntryStyle"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -353,7 +387,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto"
+                :style="foodEntryStyle"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -392,7 +426,7 @@
                 :key="item"
                 class="food-entry my-1 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
                 @click="macrosFoodItem(item)"
-                style="cursor: pointer; pointer-events: auto"
+                :style="foodEntryStyle"
               >
                 <div>
                   <p>{{ item.foodName }}</p>
@@ -502,6 +536,7 @@
 import Chart from "chart.js/auto";
 import { markRaw } from "vue";
 
+
 export default {
   data() {
     return {
@@ -510,6 +545,7 @@ export default {
       searchStatus: false,
       showCard: false,
       showDetailsFood: false,
+      currentFoodPicture: null,
       selectedFood: null, // used to show details of an already added food entry
       addCategory: "",
       inputValue: "",
@@ -625,7 +661,7 @@ export default {
       // push and retrive data by accessing the key using the date as a string
       // such as: 'Tue, 2. May 23' - I get this by calling: dateList.at(activeSlide)
       // TODO: store data exactly like this also in Firebase
-      foodData: {
+      foodData: [{
         "Tue, 2. May 23": {
           // TODO: store data for food element like this (also for addFood method):
           breakfast: [
@@ -748,15 +784,8 @@ export default {
             },
           ],
           // totals: "" // TODO: dont need these just add food and subtract exercise
-        },
-        "Wed, 3. May 23": {
-          breakfast: "croissant 300 cals",
-          lunch: "protein shake 700 cals",
-          dinner: "burher 1200 cals",
-          exercise: "walk: 800 cals",
-          snacks: "chocolate 200 cals",
-        },
-      },
+        }},
+      ],
       macrosChart: null,
       chartData: {
         labels: ["Protein", "Carbohydrates", "Fat"],
@@ -796,11 +825,37 @@ export default {
     this.getDates();
     this.createTotalsChart();
     // this.isMounted = true;
+    // initialize each date with empty lists
+    for(let i = 1; i < this.dateList.length; i++) {
+      this.foodData.push()
+      // {
+      //     breakfast: [],
+      //     lunch: [],
+      //     dinner: [],
+      //     exercise: [],
+      //     snacks: [],
+      //   }
+      const date = this.dateList[i];
+      console.log(date);
+      
+    }
+
+
   },
   updated() {
     this.isUpdated = true;
   },
   computed: {
+    foodEntryStyle() {
+      if (this.showCard) {
+        // || this.showDetailsFood
+        return {};
+      }
+      return {
+        cursor: "pointer",
+        pointerEvents: "auto",
+      };
+    },
     filteredList() {
       if (this.inputValue != "" && this.foodSearchResults != null) {
         return this.foodSearchResults;
@@ -875,17 +930,6 @@ export default {
     },
   },
   methods: {
-    showFoodList() {
-      console.log(this.foodSearchResults);
-      for (let i = 0; i < this.foodSearchResults.length; i++) {
-        console.log("");
-        console.log(this.foodSearchResults[i].foodName);
-        console.log(this.foodSearchResults[i].macronutrients);
-        console.log(this.foodSearchResults[i].calories);
-        console.log(this.foodSearchResults[i].serving_qty);
-        console.log(this.foodSearchResults[i].serving_weight);
-      }
-    },
     capitalizeLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
     },
@@ -983,8 +1027,6 @@ export default {
           break;
       }
       this.showCard = true;
-
-      // document.getElementById('foodDiary').style.pointerEvents = 'none';
       document.body.style.overflow = "hidden"; // prevent scrolling
     },
     async fetchData() {
@@ -1005,6 +1047,8 @@ export default {
       // call the actual method, that adds a new item to the list
       this.pushItem(this.itemToAdd);
       this.showCard = false;
+      this.foodSearchResults = [];
+      this.inputValue = "";
       this.itemToAdd = null;
       this.selectedItem = -1;
 
@@ -1013,8 +1057,6 @@ export default {
     },
     pushItem(newEntry) {
       // console.log("Active Date/Slide: " + this.dateList[this.activeSlide]); // add item to this date
-      console.log("Object.keys: " + Object.keys(newEntry));
-      console.log("Object.values: " + Object.values(newEntry));
       let newUnit = "100g";
       if (this.numServings !== 1) {
         newUnit =
@@ -1026,7 +1068,9 @@ export default {
         ...newEntry,
         calories: newEntry.calories * this.numServings,
         macronutrients: {
-          carbohydrates: Math.floor(newEntry.macronutrients.fat * this.numServings),
+          carbohydrates: Math.floor(
+            newEntry.macronutrients.carbohydrates * this.numServings
+          ),
           fat: Math.floor(newEntry.macronutrients.fat * this.numServings),
           protein: Math.floor(
             newEntry.macronutrients.protein * this.numServings
@@ -1034,7 +1078,6 @@ export default {
         },
         unit: newUnit,
       };
-      console.log("but this isnt");
 
       // console.log(editedEntry);
       // console.log(this.foodData[this.dateList[this.activeSlide]][this.addCategory]);
@@ -1084,18 +1127,13 @@ export default {
       return `Carbs: ${macros.carbohydrates}g · Protein: ${macros.protein}g · Fat: ${macros.fat}g`;
       // return macros;
     },
-    selectItem(index, item) {
-
-      // TODO: for some weird reason,
-      // the first time u select an item -> all the data is not passed over
-      // but after the second time all the data does get passed over
+    selectItem(index) {
       this.selectedItem = index;
-      console.log("index: " + index);
-      this.itemToAdd = item;
-      console.log("Keys in item: ");
-      for(let i in item) {
-        console.log(i);
-      }      
+      if (this.foodSearchResults.length === 0) {
+        this.itemToAdd = this.foodList[0];
+      } else {
+        this.itemToAdd = this.foodSearchResults[index];
+      }
 
       if (this.macrosChart) {
         this.macrosChart.destroy();
@@ -1105,25 +1143,37 @@ export default {
       if (this.macrosChart) {
         this.updateChart();
       }
-      console.log(index + ", " + item);
     },
     macrosFoodItem(item) {
-      //TODO: make individual food items spawn a pop up card,
-      // which can be clicked away
-      // with the info and macros to that food item
-      //TODO: use same function as in macrosMeal()
-      // or just call this function from inside macrosMeal()
       this.selectedFood = item;
       this.showDetailsFood = true;
-
-      console.log("display macros for food item");
+      // this.getFoodPicture(item.foodName);
       document.body.style.overflow = "hidden"; // prevent scrolling
     },
     closeMacroCard() {
       this.showDetailsFood = false;
       this.selectedFood = null;
+      // this.currentFoodPicture = null;
       document.body.style.overflow = "auto"; // prevent scrolling
     },
+    // async getFoodPicture(query) {
+    //   console.log(query);
+    //   const url = `https://serpapi.com/search.html?engine=google&q=Coffee&google_domain=google.de&gl=de&hl=de&tbm=isch&num=5&api_key=8a7c49446b0ef6c6ab58b939adcd506af4f2c6f51b011adb363181b395e17af8`
+    //   await fetch(url)
+    //     .then((response) => {
+    //       if (response.ok) {
+    //         return response.json();
+    //       } else {
+    //         throw new Error("Request failed.");
+    //       }
+    //     })
+    //     .then((data) => {
+    //       console.log(data);
+    //     })
+    //     .catch((error) => {
+    //       console.error(error);
+    //     });
+    // },
     calorieTotals(category) {
       // category is 'breakfast', 'lunch' etc.
       let calTotal = 0;
@@ -1336,6 +1386,10 @@ p {
   margin-bottom: 0;
 }
 
+.container {
+  /* position: relative; */
+}
+
 .macroChartDiv {
   height: 150px;
 }
@@ -1351,14 +1405,16 @@ canvas {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
   border: none;
 }
-.calTotalText {
-}
-.calSubtext {
-  word-spacing: 50px;
-}
 .calTotalDay {
   text-align: center;
 }
+
+.calsRemaining {
+  display: inline-block;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .addEntryBtn {
   background: none;
   border: none;
@@ -1372,9 +1428,10 @@ canvas {
 .addEntryBtn:hover {
   opacity: 0.85;
 }
-p.subtext {
-  font-size: 0.8em;
-  color: #999;
+p.subtext,
+span.subtext {
+  font-size: 0.92em;
+  color: #797878;
 }
 
 .scrollable-list {
