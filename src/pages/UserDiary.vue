@@ -1,13 +1,5 @@
 <template>
   <div style="background-color: #f8f9fa">
-    <!-- <div v-if="showCard" class="card">
-      <div class="card-body">
-        <button @click="closeCard()">Close</button>
-      </div>
-    </div> -->
-
-    <!-- TODO: add picture
-    from nutritionix api -->
 
     <!-- addFoodCard -->
     <div v-show="showCard" class="card">
@@ -828,6 +820,10 @@ export default {
     // initialize each date with empty lists
     for(let i = 1; i < this.dateList.length; i++) {
       this.foodData.push()
+
+
+      // TODO: make foodData an array and initality each date with empty entries for food
+
       // {
       //     breakfast: [],
       //     lunch: [],
