@@ -522,7 +522,7 @@
 <script>
 import Chart from "chart.js/auto";
 import { markRaw } from "vue";
-import { getDatabase, ref, set } from "firebase/database";
+import { getDatabase, ref, push } from "firebase/database";
 
 export default {
   data() {
@@ -645,6 +645,7 @@ export default {
       selectedItem: -1,
       itemToAdd: null,
       numServings: 1,
+      // TODO: load data for each individual date from firebase
       foodData: [
         // will be indexed, like the carousel dateList
         {
@@ -1060,7 +1061,7 @@ export default {
     },
   },
   methods: {
-    saveEntry() {
+    async saveEntry(foodEntry) {
       // const foodEntry = {
       //   // foodName: this.foodName,
       //   // quantity: this.quantity,
@@ -1068,11 +1069,16 @@ export default {
       //   // Additional properties as needed
       // };
 
+      console.log(foodEntry);
+      let dateFormatted = this.dateList[this.activeSlide];
+      dateFormatted = dateFormatted.split(",")[1].trim().replace(".","").replace(/\s+/g, '-');
+      console.log("date: " + dateFormatted);
+      const date = new Date();
+      const currentDateTime = date.toLocaleString();
       const db = getDatabase();
-      set(ref(db, "users/" + "userIdMalikAsJoke"), {
-        foodName: "Salmon",
-        quantity: "100g",
-        date: "Tue June 6",
+      await push(ref(db, "users/" + "userId/" + `${dateFormatted}/` + `${this.addCategory.toLowerCase()}`), { // users/userId/<Date>/<Category>
+        ...foodEntry,
+        time: currentDateTime,
       });
     },
     capitalizeLetter(string) {
@@ -1229,14 +1235,16 @@ export default {
       };
 
       const foodData = this.getFoodData();
-      console.log(foodData[`${this.dateList[this.activeSlide]}`]);
+
+      // console.log(foodData[`${this.dateList[this.activeSlide]}`]);
+
       foodData[`${this.dateList[this.activeSlide]}`][
         this.addCategory.toLowerCase()
       ].push(editedEntry);
       this.numServings = 1;
       this.macrosChart.destroy(); // reset the macroChart
 
-      this.saveEntry();
+      this.saveEntry(editedEntry);
     },
     macrosMeal(category) {
       let macros = {
@@ -1281,7 +1289,7 @@ export default {
     selectItem(index) {
       this.selectedItem = index;
       if (this.foodSearchResults.length === 0) {
-        this.itemToAdd = this.foodList[0];
+        this.itemToAdd = this.foodList[index];
       } else {
         this.itemToAdd = this.foodSearchResults[index];
       }
