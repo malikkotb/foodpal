@@ -1,7 +1,15 @@
 <template>
     <div>
-        <h3>User Settings Page</h3>
-        <h4>Where user can set calorie and weight goals etc.</h4>
+        <h3>Your Fitness Goals</h3>
+        <div class="row">
+            <div class="col-6">
+                Daily Nutrition Goals
+            </div>
+            <div class="col-6">
+                Could put sth in here but down have to innit
+            </div>
+
+        </div>
     </div>
 </template>
 
@@ -13,7 +21,6 @@ export default {
 
 <style scoped>
 div {
-    background-color: aqua;
 }
 </style>
 

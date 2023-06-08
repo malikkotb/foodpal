@@ -1,123 +1,126 @@
 <template>
   <div style="background-color: #f8f9fa">
     <!-- addFoodCard -->
-    <div v-show="showCard" class="card">
-      <div class="card-header">
-        <h4 class="mb-0" style="text-align: center">{{ addCategory }}</h4>
-      </div>
-      <div class="card-body px-4 pb-0">
-        <div class="row">
-          <div class="mb-0 col-md-6 addFoodCol">
-            <div class="input-group">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Search..."
-                v-model="inputValue"
-              />
-              <button
-                @click="fetchData()"
-                class="btn btn-primary"
-                type="button"
-              >
-                <i class="fas fa-search"></i>
-              </button>
-            </div>
+    <div class="card-container">
+      <div v-show="showCard" class="card">
+        <div class="card-header">
+          <h4 class="mb-0" style="text-align: center">{{ addCategory }}</h4>
+        </div>
+        <div class="card-body px-4 pb-0">
+          <div class="row">
+            <div class="mb-0 col-md-6 addFoodCol">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search..."
+                  v-model="inputValue"
+                />
+                <button
+                  @click="fetchData()"
+                  class="btn btn-primary"
+                  type="button"
+                >
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
 
-            <div class="scrollable-list">
-              <div
-                class="d-flex justify-content-center align-items-center h-100"
-                v-if="searchStatus"
-              >
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Loading...</span>
+              <div class="scrollable-list">
+                <div
+                  class="d-flex justify-content-center align-items-center h-100"
+                  v-if="searchStatus"
+                >
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                <ul v-else>
+                  <li
+                    v-for="(item, index) in filteredList"
+                    :key="index"
+                    @click="selectItem(index)"
+                    :class="{ selected: index === selectedItem }"
+                  >
+                    {{ capitalizeLetter(item.foodName) }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="mb-0 col-md-6 addFoodCol">
+              <div class="relative">
+                <canvas ref="myChart" class="mx-0" id="macrosChart"></canvas>
+                <div class="absolute-center text-center">
+                  <p style="font-size: 1.2rem" v-if="selectedItem > -1">
+                    <strong>{{ selectedItemToAdd.calories }}</strong>
+                  </p>
+                  <p v-if="selectedItem > -1">cal</p>
                 </div>
               </div>
-              <ul v-else>
-                <li
-                  v-for="(item, index) in filteredList"
-                  :key="index"
-                  @click="selectItem(index)"
-                  :class="{ selected: index === selectedItem }"
-                >
-                  {{ capitalizeLetter(item.foodName) }}
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div class="mb-0 col-md-6 addFoodCol">
-            <div class="relative">
-              <canvas ref="myChart" class="mx-0" id="macrosChart"></canvas>
-              <div class="absolute-center text-center">
-                <p style="font-size: 1.2rem" v-if="selectedItem > -1">
-                  <strong>{{ selectedItemToAdd.calories }}</strong>
-                </p>
-                <p v-if="selectedItem > -1">cal</p>
-              </div>
-            </div>
 
-            <div v-if="selectedItemToAdd">
-              <p>
-                <strong>{{
-                  capitalizeLetter(selectedItemToAdd.foodName)
-                }}</strong>
-              </p>
-              <!-- <p>Calories: <strong>{{ selectedItemToAdd.calories }}</strong></p> -->
-              <p>
-                Carbohydrate:
-                <span style="float: right">
-                  <strong
-                    >{{
-                      selectedItemToAdd.macronutrients.carbohydrates
-                    }}g</strong
-                  ></span
-                >
-              </p>
-              <p>
-                Fat:
-                <span style="float: right">
-                  <strong>{{ selectedItemToAdd.macronutrients.fat }}g</strong>
-                </span>
-              </p>
-              <p>
-                Protein:
-                <span style="float: right">
-                  <strong
-                    >{{ selectedItemToAdd.macronutrients.protein }}g</strong
+              <div v-if="selectedItemToAdd">
+                <p>
+                  <strong>{{
+                    capitalizeLetter(selectedItemToAdd.foodName)
+                  }}</strong>
+                </p>
+                <!-- <p>Calories: <strong>{{ selectedItemToAdd.calories }}</strong></p> -->
+                <p>
+                  Carbohydrate:
+                  <span style="float: right">
+                    <strong
+                      >{{
+                        selectedItemToAdd.macronutrients.carbohydrates
+                      }}g</strong
+                    ></span
                   >
-                </span>
-              </p>
-              <p>
-                Serving Size:
-                <span style="float: right">
-                  <strong
-                    >{{
-                      selectedItemToAdd.serving_weight
-                        ? selectedItemToAdd.serving_weight
-                        : 100
-                    }}g</strong
-                  >
-                </span>
-              </p>
-              <p>
-                Servings:<input
-                  v-model="numServings"
-                  type="text"
-                  style="width: 50px; float: right"
-                />
-              </p>
+                </p>
+                <p>
+                  Fat:
+                  <span style="float: right">
+                    <strong>{{ selectedItemToAdd.macronutrients.fat }}g</strong>
+                  </span>
+                </p>
+                <p>
+                  Protein:
+                  <span style="float: right">
+                    <strong
+                      >{{ selectedItemToAdd.macronutrients.protein }}g</strong
+                    >
+                  </span>
+                </p>
+                <p>
+                  Serving Size:
+                  <span style="float: right">
+                    <strong
+                      >{{
+                        selectedItemToAdd.serving_weight
+                          ? selectedItemToAdd.serving_weight
+                          : 100
+                      }}g</strong
+                    >
+                  </span>
+                </p>
+                <p>
+                  Servings:<input
+                    v-model="numServings"
+                    type="text"
+                    style="width: 50px; float: right"
+                  />
+                </p>
+              </div>
+              <h3 v-else class="text-center">Search for a food</h3>
             </div>
-            <h3 v-else class="text-center">Search for a food</h3>
           </div>
         </div>
+        <button
+          class="addFoodBtn"
+          v-bind:disabled="!(selectedItem > -1)"
+          @click="closeCard"
+        >
+          Add
+        </button>
       </div>
-      <button
-        class="addFoodBtn"
-        v-bind:disabled="!(selectedItem > -1)"
-        @click="closeCard"
-      >
-        Add
-      </button>
+      <div class="backdrop" v-if="showCard" @click="closeCard"></div>
     </div>
 
     <div v-show="showDetailsFood" class="macroCard">
@@ -947,9 +950,10 @@ export default {
   },
   computed: {
     foodEntryStyle() {
-      if (this.showCard) {
-        // || this.showDetailsFood
-        return {};
+      if (this.showCard || this.showDetailsFood) {
+        return {
+          pointerEvents: "none",
+        };
       }
       return {
         cursor: "pointer",
@@ -977,7 +981,6 @@ export default {
       if (this.isUpdated) {
         if (this.dateList && this.activeSlide !== null) {
           const foodData = this.getFoodData();
-          console.log(foodData);
           if (
             foodData &&
             foodData[`${this.dateList[this.activeSlide]}`].breakfast
@@ -1071,15 +1074,29 @@ export default {
 
       console.log(foodEntry);
       let dateFormatted = this.dateList[this.activeSlide];
-      dateFormatted = dateFormatted.split(",")[1].trim().replace(".","").replace(/\s+/g, '-');
+      dateFormatted = dateFormatted
+        .split(",")[1]
+        .trim()
+        .replace(".", "")
+        .replace(/\s+/g, "-");
       console.log("date: " + dateFormatted);
       const date = new Date();
       const currentDateTime = date.toLocaleString();
       const db = getDatabase();
-      await push(ref(db, "users/" + "userId/" + `${dateFormatted}/` + `${this.addCategory.toLowerCase()}`), { // users/userId/<Date>/<Category>
-        ...foodEntry,
-        time: currentDateTime,
-      });
+      await push(
+        ref(
+          db,
+          "users/" +
+            "userId/" +
+            `${dateFormatted}/` +
+            `${this.addCategory.toLowerCase()}`
+        ),
+        {
+          // users/userId/<Date>/<Category>
+          ...foodEntry,
+          timeAdded: currentDateTime,
+        }
+      );
     },
     capitalizeLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
@@ -1200,11 +1217,13 @@ export default {
     },
     closeCard() {
       // call the actual method, that adds a new item to the list
-      this.pushItem(this.itemToAdd);
+      if (this.itemToAdd) {
+        this.pushItem(this.itemToAdd);
+        this.itemToAdd = null;
+      }
       this.showCard = false;
       this.foodSearchResults = [];
       this.inputValue = "";
-      this.itemToAdd = null;
       this.selectedItem = -1;
 
       document.body.style.overflow = "auto";
@@ -1315,24 +1334,6 @@ export default {
       // this.currentFoodPicture = null;
       document.body.style.overflow = "auto"; // prevent scrolling
     },
-    // async getFoodPicture(query) {
-    //   console.log(query);
-    //   const url = `https://serpapi.com/search.html?engine=google&q=Coffee&google_domain=google.de&gl=de&hl=de&tbm=isch&num=5&api_key=8a7c49446b0ef6c6ab58b939adcd506af4f2c6f51b011adb363181b395e17af8`
-    //   await fetch(url)
-    //     .then((response) => {
-    //       if (response.ok) {
-    //         return response.json();
-    //       } else {
-    //         throw new Error("Request failed.");
-    //       }
-    //     })
-    //     .then((data) => {
-    //       console.log(data);
-    //     })
-    //     .catch((error) => {
-    //       console.error(error);
-    //     });
-    // },
     calorieTotals(category) {
       // category is 'breakfast', 'lunch' etc.
       let calTotal = 0;
@@ -1622,13 +1623,34 @@ li {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 999;
+  z-index: 3;
   width: 470px;
   height: 470px;
   background-color: white;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   /* transition: transform 0.3s ease-in-out; */
+}
+
+.card-container {
+  position: relative;
+  /* Add other styles as needed */
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Adjust the opacity value to control darkness */
+  z-index: 2;
+  /* Add other styles for the backdrop */
 }
 
 .macroCard {

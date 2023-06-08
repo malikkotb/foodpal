@@ -39,12 +39,12 @@
               News</router-link
             >
           </li>
-          <li>
+          <!-- <li>
             <router-link class="nav-link px-2 link-light" to="/settings">
               <font-awesome-icon icon="fa-solid fa-ellipsis" size="lg" />
               Settings</router-link
             >
-          </li>
+          </li> -->
         </ul>
 
         <!-- remove search bar  -->
@@ -66,8 +66,8 @@
             aria-expanded="false"
           >
             <img
-              src="https://github.com/mdo.png"
-              alt="mdo"
+              src="../assets/avatar.png"
+              alt="avatar"
               width="32"
               height="32"
               class="rounded-circle"
@@ -78,9 +78,7 @@
             aria-labelledby="dropdownUser1"
             style=""
           >
-            <li><a class="dropdown-item" href="#">New project...</a></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><router-link class="dropdown-item" to="/settings">User Goals</router-link></li>
             <li><hr class="dropdown-divider" /></li>
             <li><a class="dropdown-item" href="#">Sign out</a></li>
           </ul>
