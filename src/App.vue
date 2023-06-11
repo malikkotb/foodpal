@@ -15,8 +15,7 @@
         </div>
       </div>
     </footer>
-
-</div>
+  </div>
 </template>
 
 <script>
@@ -25,6 +24,9 @@ export default {
   name: "App",
   components: {
     TheHeader,
+  },
+  methods: {
+   
   },
 };
 </script>

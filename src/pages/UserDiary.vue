@@ -251,23 +251,21 @@
                 <div class="calTotalDay">
                   <div class="calsRemaining">
                     <p>
-                      <strong>3000</strong><br /><span class="subtext"
-                        >Goal</span
-                      >
+                      <strong>{{ userCalories }}</strong
+                      ><br /><span class="subtext">Goal</span>
                     </p>
                   </div>
                   <div class="calsRemaining"><p>+</p></div>
                   <div class="calsRemaining">
                     <p>
-                      <strong>2543</strong><br /><span class="subtext"
-                        >Food</span
-                      >
+                      <strong>{{ currentCalories }}</strong
+                      ><br /><span class="subtext">Food</span>
                     </p>
                   </div>
                   <div class="calsRemaining"><p>-</p></div>
                   <div class="calsRemaining">
                     <p>
-                      <strong>300</strong><br /><span class="subtext"
+                      <strong>0</strong><br /><span class="subtext"
                         >Exercise</span
                       >
                     </p>
@@ -275,7 +273,9 @@
                   <div class="calsRemaining"><p>=</p></div>
                   <div class="calsRemaining">
                     <p>
-                      <span style="color: green; font-weight: bold">400</span
+                      <span style="color: green; font-weight: bold">{{
+                        userCalories - currentCalories
+                      }}</span
                       ><br /><span class="subtext">Remaining</span>
                     </p>
                   </div>
@@ -436,7 +436,7 @@
               </div>
 
               <!-- Exercise -->
-              <div class="meal-time mt-4 mb-2 mx-3 px-3 py-2">
+              <!-- <div class="meal-time mt-4 mb-2 mx-3 px-3 py-2">
                 <div
                   class="mb-0 d-flex justify-content-between align-items-baseline"
                 >
@@ -462,14 +462,13 @@
                   <p>{{ item.caloriesBurned }}</p>
                 </div>
               </div>
-              <!-- Add Execise -->
               <div
                 class="food-entry mt-0 mb-4 mx-3 px-3 py-2 d-flex align-items-center justify-content-between"
               >
                 <button @click="addEntry('exercise')" class="addEntryBtn">
                   Add Exercise
                 </button>
-              </div>
+              </div> -->
 
               <!-- Totals -->
               <div
@@ -487,25 +486,25 @@
                       <th>Protein</th>
                     </tr>
                     <tr>
-                      <td>Total</td>
-                      <td>1000</td>
-                      <td>150g</td>
-                      <td>40g</td>
-                      <td>80g</td>
+                      <td>Daily Goal</td>
+                      <td>{{ userCalories }}</td>
+                      <td>200 g</td>
+                      <td>60 g</td>
+                      <td>100 g</td>
                     </tr>
                     <tr>
-                      <td>Daily Goal</td>
-                      <td>{{ dailyGoal }}</td>
-                      <td>200g</td>
-                      <td>60g</td>
-                      <td>100g</td>
+                      <td>Total</td>
+                      <td>{{ currentCalories }}</td>
+                      <td>{{ currentCarbs }} g</td>
+                      <td>{{ currentFat }} g</td>
+                      <td>{{ currentProtein }} g</td>
                     </tr>
                     <tr>
                       <td>Left</td>
-                      <td>1000</td>
-                      <td>50g</td>
-                      <td>20g</td>
-                      <td>20g</td>
+                      <td>{{ userCalories - currentCalories }}</td>
+                      <td>50 g</td>
+                      <td>20 g</td>
+                      <td>20 g</td>
                     </tr>
                   </table>
                 </div>
@@ -525,7 +524,7 @@
 <script>
 import Chart from "chart.js/auto";
 import { markRaw } from "vue";
-import { getDatabase, ref, push } from "firebase/database";
+import { getDatabase, ref, push, get, child } from "firebase/database";
 
 export default {
   data() {
@@ -535,11 +534,11 @@ export default {
       searchStatus: false,
       showCard: false,
       showDetailsFood: false,
-      currentFoodPicture: null,
+      // currentFoodPicture: null,
       selectedFood: null, // used to show details of an already added food entry
       addCategory: "",
       inputValue: "",
-      userCalories: 3000, // TODO: change this to global variable, get from firebase user account
+      userCalories: 3000,
       activeSlide: 0,
       isUpdated: false,
       dailyGoal: 3000, //TODO: get this from Store
@@ -930,7 +929,25 @@ export default {
   mounted() {
     this.getDates();
     this.createTotalsChart();
-    // console.log(this.foodData[this.activeSlide]);
+
+    // Get User Calories and Macros
+    const dbRef = ref(getDatabase());
+    get(child(dbRef, "users/userId/settings"))
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          // console.log(data);
+          this.userCalories = data.calories;
+          // this.carbohydrates = data.carbohydrates;
+          // this.fat = data.fat;
+          // this.protein = data.protein;
+        } else {
+          console.log("No data available");
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 
     // initialize each date with empty lists
     for (let i = 2; i < this.dateList.length; i++) {
@@ -949,6 +966,103 @@ export default {
     this.isUpdated = true;
   },
   computed: {
+    currentCalories() {
+      let calTotal = 0;
+
+      if (this.isUpdated) {
+        const foodEntries = [
+          this.breakfastItems,
+          this.lunchItems,
+          this.dinnerItems,
+          this.snackItems,
+          // foodEntries = this.exerciseItems;
+        ];
+
+        for (let i = 0; i < foodEntries.length; i++) {
+          if (foodEntries[i] !== null) {
+            console.log(foodEntries[i]);
+            for (let j = 0; j < foodEntries[i].length; j++) {
+              calTotal += foodEntries[i][j].calories;
+            }
+          }
+        }
+        return calTotal;
+      }
+
+      return calTotal;
+    },
+    currentCarbs() {
+      let carbTotal = 0;
+
+      if (this.isUpdated) {
+        const foodEntries = [
+          this.breakfastItems,
+          this.lunchItems,
+          this.dinnerItems,
+          this.snackItems,
+          // foodEntries = this.exerciseItems;
+        ];
+
+        for (let i = 0; i < foodEntries.length; i++) {
+          if (foodEntries[i] !== null) {
+            for (let j = 0; j < foodEntries[i].length; j++) {
+              carbTotal += foodEntries[i][j].macronutrients.carbohydrates;
+            }
+          }
+        }
+        return Math.floor(carbTotal);
+      }
+
+      return carbTotal;
+    },
+    currentProtein() {
+      let proteinTotal = 0;
+
+      if (this.isUpdated) {
+        const foodEntries = [
+          this.breakfastItems,
+          this.lunchItems,
+          this.dinnerItems,
+          this.snackItems,
+          // foodEntries = this.exerciseItems;
+        ];
+
+        for (let i = 0; i < foodEntries.length; i++) {
+          if (foodEntries[i] !== null) {
+            for (let j = 0; j < foodEntries[i].length; j++) {
+              proteinTotal += foodEntries[i][j].macronutrients.protein;
+            }
+          }
+        }
+        return Math.floor(proteinTotal);
+      }
+
+      return proteinTotal;
+    },
+    currentFat() {
+      let fatTotal = 0;
+
+      if (this.isUpdated) {
+        const foodEntries = [
+          this.breakfastItems,
+          this.lunchItems,
+          this.dinnerItems,
+          this.snackItems,
+          // foodEntries = this.exerciseItems;
+        ];
+
+        for (let i = 0; i < foodEntries.length; i++) {
+          if (foodEntries[i] !== null) {
+            for (let j = 0; j < foodEntries[i].length; j++) {
+              fatTotal += foodEntries[i][j].macronutrients.fat;
+            }
+          }
+        }
+        return Math.floor(fatTotal);
+      }
+
+      return fatTotal;
+    },
     foodEntryStyle() {
       if (this.showCard || this.showDetailsFood) {
         return {
@@ -1065,13 +1179,6 @@ export default {
   },
   methods: {
     async saveEntry(foodEntry) {
-      // const foodEntry = {
-      //   // foodName: this.foodName,
-      //   // quantity: this.quantity,
-      //   // date: this.date,
-      //   // Additional properties as needed
-      // };
-
       console.log(foodEntry);
       let dateFormatted = this.dateList[this.activeSlide];
       dateFormatted = dateFormatted
