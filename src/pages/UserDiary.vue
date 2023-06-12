@@ -331,7 +331,7 @@
                   </p>
                 </div>
                 <p class="subtext">
-                  {{ isUpdated ? macrosMeal("lunch") : "Loading Macros" }}
+                  <!-- {{ isUpdated ? macrosMeal("lunch") : "Loading Macros" }} -->
                 </p>
               </div>
               <div
@@ -369,7 +369,7 @@
                   </p>
                 </div>
                 <p class="subtext">
-                  {{ isUpdated ? macrosMeal("dinner") : "Loading Macros" }}
+                  <!-- {{ isUpdated ? macrosMeal("dinner") : "Loading Macros" }} -->
                 </p>
               </div>
               <div
@@ -408,7 +408,7 @@
                   </p>
                 </div>
                 <p class="subtext">
-                  {{ isUpdated ? macrosMeal("snacks") : "Loading Macros" }}
+                  <!-- {{ isUpdated ? macrosMeal("snacks") : "Loading Macros" }} -->
                 </p>
               </div>
               <div
@@ -488,9 +488,9 @@
                     <tr>
                       <td>Daily Goal</td>
                       <td>{{ userCalories }}</td>
-                      <td>200 g</td>
-                      <td>60 g</td>
-                      <td>100 g</td>
+                      <td>{{ userCarbs }} g</td>
+                      <td>{{ userFat }} g</td>
+                      <td>{{ userProtein }} g</td>
                     </tr>
                     <tr>
                       <td>Total</td>
@@ -502,9 +502,9 @@
                     <tr>
                       <td>Left</td>
                       <td>{{ userCalories - currentCalories }}</td>
-                      <td>50 g</td>
-                      <td>20 g</td>
-                      <td>20 g</td>
+                      <td>{{ userCarbs - currentCarbs }} g</td>
+                      <td>{{ userFat - currentFat }} g</td>
+                      <td>{{ userProtein - currentProtein }} g</td>
                     </tr>
                   </table>
                 </div>
@@ -538,7 +538,10 @@ export default {
       selectedFood: null, // used to show details of an already added food entry
       addCategory: "",
       inputValue: "",
-      userCalories: 3000,
+      userCalories: 3000, // these are the set calories and macros set by the user in user settings page
+      userCarbs: 300,
+      userFat: 90,
+      userProtein: 180,
       activeSlide: 0,
       isUpdated: false,
       dailyGoal: 3000, //TODO: get this from Store
@@ -891,6 +894,7 @@ export default {
           },
         },
       ],
+      firebaseData: null,
       macrosChart: null,
       chartData: {
         labels: ["Protein", "Carbohydrates", "Fat"],
@@ -926,7 +930,7 @@ export default {
       this.macrosChart.destroy();
     }
   },
-  mounted() {
+  async mounted() {
     this.getDates();
     this.createTotalsChart();
 
@@ -938,9 +942,9 @@ export default {
           const data = snapshot.val();
           // console.log(data);
           this.userCalories = data.calories;
-          // this.carbohydrates = data.carbohydrates;
-          // this.fat = data.fat;
-          // this.protein = data.protein;
+          this.userCarbs = data.carbohydrates;
+          this.userFat = data.fat;
+          this.userProtein = data.protein;
         } else {
           console.log("No data available");
         }
@@ -948,6 +952,9 @@ export default {
       .catch((error) => {
         console.error(error);
       });
+
+    this.firebaseData = await this.getFoodFromFirebase();
+  
 
     // initialize each date with empty lists
     for (let i = 2; i < this.dateList.length; i++) {
@@ -962,7 +969,7 @@ export default {
       });
     }
   },
-  updated() {
+  async updated() {
     this.isUpdated = true;
   },
   computed: {
@@ -975,12 +982,10 @@ export default {
           this.lunchItems,
           this.dinnerItems,
           this.snackItems,
-          // foodEntries = this.exerciseItems;
         ];
 
         for (let i = 0; i < foodEntries.length; i++) {
           if (foodEntries[i] !== null) {
-            console.log(foodEntries[i]);
             for (let j = 0; j < foodEntries[i].length; j++) {
               calTotal += foodEntries[i][j].calories;
             }
@@ -1000,7 +1005,6 @@ export default {
           this.lunchItems,
           this.dinnerItems,
           this.snackItems,
-          // foodEntries = this.exerciseItems;
         ];
 
         for (let i = 0; i < foodEntries.length; i++) {
@@ -1024,7 +1028,6 @@ export default {
           this.lunchItems,
           this.dinnerItems,
           this.snackItems,
-          // foodEntries = this.exerciseItems;
         ];
 
         for (let i = 0; i < foodEntries.length; i++) {
@@ -1048,7 +1051,6 @@ export default {
           this.lunchItems,
           this.dinnerItems,
           this.snackItems,
-          // foodEntries = this.exerciseItems;
         ];
 
         for (let i = 0; i < foodEntries.length; i++) {
@@ -1092,17 +1094,29 @@ export default {
       }
     },
     breakfastItems() {
-      if (this.isUpdated) {
+      if (this.isUpdated && this.firebaseData) {
         if (this.dateList && this.activeSlide !== null) {
-          const foodData = this.getFoodData();
-          if (
-            foodData &&
-            foodData[`${this.dateList[this.activeSlide]}`].breakfast
-          ) {
-            return foodData[`${this.dateList[this.activeSlide]}`].breakfast;
-          } else {
-            return null;
+          
+          let breakfastData = [];
+          for (let key in this.firebaseData.breakfast) {
+            console.log(this.firebaseData.breakfast[key]);
+            breakfastData.push(this.firebaseData.breakfast[key]);
           }
+
+          return breakfastData;
+
+
+          // old code, without firebase
+          // const foodData = this.getFoodData(); 
+          // if (
+          //   foodData &&
+          //   foodData[`${this.dateList[this.activeSlide]}`].breakfast
+          // ) {
+          //   console.log("is Array: " + Array.isArray(foodData[`${this.dateList[this.activeSlide]}`].breakfast));
+          //   return foodData[`${this.dateList[this.activeSlide]}`].breakfast;
+          // } else {
+          //   return null;
+          // }
         }
         return "Loading";
       }
@@ -1228,7 +1242,6 @@ export default {
       }
     },
     getFoodData() {
-      // console.log(this.foodData);
       if (this.dateList != null && this.activeSlide !== null) {
         if (this.foodData[this.activeSlide] === null) {
           return null;
@@ -1237,8 +1250,59 @@ export default {
       }
       return null;
     },
+    async getFoodFromFirebase() {
+      let dateFormatted = this.dateList[this.activeSlide];
+      dateFormatted = dateFormatted
+        .split(",")[1]
+        .trim()
+        .replace(".", "")
+        .replace(/\s+/g, "-");
+      console.log("reading data for: " + dateFormatted);
+
+      try {
+        const dbRef = ref(getDatabase());
+        await get(child(dbRef, "users/userId/" + `${dateFormatted}`))
+          .then((snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.val();
+              console.log("data inside try block: " + Object.keys(data));
+              this.firebaseData = data;
+              return data;
+            } else {
+              console.log("No data available");
+              return null;
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+
+
+      } catch (error) {
+        console.error("Error reading data from Firebase:", error);
+        return null;
+      }
+
+      // const dbRef = ref(getDatabase());
+      // await get(
+      //   child(dbRef, "users/userId/" + `${dateFormatted}`)
+      // )
+      //   .then((snapshot) => {
+      //     if (snapshot.exists()) {
+      //       const data = snapshot.val();
+      //       return data;
+      //     } else {
+      //       console.log("No data available");
+      //       return null;
+      //     }
+      //   })
+      //   .catch((error) => {
+      //     console.error(error);
+      //   });
+    },
     updateActiveSlide(operation) {
       operation === "+" ? this.activeSlide++ : this.activeSlide--;
+      //TODO: call getFoodFromFirebase for new Date (using formattedDate) here
     },
     getDates() {
       const startDate = new Date("2023-05-02");
@@ -1370,6 +1434,7 @@ export default {
       this.numServings = 1;
       this.macrosChart.destroy(); // reset the macroChart
 
+      // WRITE to FIREBASE BACKEND
       this.saveEntry(editedEntry);
     },
     macrosMeal(category) {
@@ -1379,6 +1444,8 @@ export default {
         fat: 0,
       };
       let foodEntries = null;
+
+      console.log("FIREBASE DATA: " + foodFromFirebase);
 
       switch (category) {
         case "bf":
@@ -1399,6 +1466,8 @@ export default {
         default:
           break;
       }
+
+      console.log("foodEntries : " + foodEntries);
 
       if (foodEntries !== null) {
         for (let i = 0; i < foodEntries.length; i++) {
@@ -1481,6 +1550,7 @@ export default {
           datasets: [
             {
               data: [300, 50, 100],
+              // change data to: this.currentCarbs, this.currentFat, this.currentProtein
               backgroundColor: [
                 "#00B4BD", // carbs
                 "#FF2523", // fat

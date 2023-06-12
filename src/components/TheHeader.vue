@@ -5,28 +5,19 @@
         class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start"
       >
         <!-- logo: -->
-        <a
-          href="/"
-          class="d-flex align-items-center mb-2 mb-lg-0 text-light text-decoration-none"
-        >
+        <router-link class="nav-link px-2 link-light" to="/diary">
           <font-awesome-icon
             class="bi ms-2 me-2"
             icon="fa-solid fa-pepper-hot"
             size="xl"
           />
           FoodPal
-        </a>
+        </router-link>
         <!-- logo -->
 
         <ul
           class="nav col-12 col-lg-auto ms-4 me-lg-auto mb-2 justify-content-center mb-md-0"
         >
-          <li>
-            <router-link class="nav-link px-2 link-light" to="/home">
-              <font-awesome-icon icon="fa-solid fa-bars-progress" />
-              Dashboard</router-link
-            >
-          </li>
           <li>
             <router-link class="nav-link px-2 link-light" to="/diary">
               <font-awesome-icon icon="fa-solid fa-book-open-reader" />
@@ -39,23 +30,14 @@
               News</router-link
             >
           </li>
-          <!-- <li>
+          <li>
             <router-link class="nav-link px-2 link-light" to="/settings">
-              <font-awesome-icon icon="fa-solid fa-ellipsis" size="lg" />
+              <font-awesome-icon icon="fa-solid fa-bars-progress" />
               Settings</router-link
             >
-          </li> -->
+          </li>
+         
         </ul>
-
-        <!-- remove search bar  -->
-        <!-- <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
-          <input
-            type="search"
-            class="form-control"
-            placeholder="Search..."
-            aria-label="Search"
-          />
-        </form> -->
 
         <div class="dropdown text-end">
           <a
@@ -78,7 +60,11 @@
             aria-labelledby="dropdownUser1"
             style=""
           >
-            <li><router-link class="dropdown-item" to="/settings">User Goals</router-link></li>
+            <li>
+              <router-link class="dropdown-item" to="/settings"
+                >User Goals</router-link
+              >
+            </li>
             <li><hr class="dropdown-divider" /></li>
             <li><a class="dropdown-item" href="#">Sign out</a></li>
           </ul>
@@ -89,16 +75,6 @@
 </template>
 
 <script>
-export default {
-  methods: {
-    setup() {
-      //TODO: make all other tabs other than home and dashboard unpressable
-      // if the user is not logged in
-      // TODO: bind class="link-secondary or link-dark" if link is currently active (if that page is active)
-      // and have custom DashBoard/Home page if User is not logged in
-    },
-  },
-};
 </script>
 
 <style scoped>

@@ -5,21 +5,16 @@
     <div class="container-fluid px-4">
       <h1 class="mt-4">Dashboard</h1>
       <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Dashboard</li>
+        <li class="breadcrumb-item active">Work in Progress</li>
       </ol>
 
-      <h6>Get weight data in general and steps/exercise as well.</h6>
-      <p>
-        But the rest display only for the current day , so only display the date
-        of the current day by retrieving data from firebase using
-        today.getDate()
-      </p>
+      
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-5">
           <div class="card mb-4">
             <div class="card-header">
-              Calorie Ring Remaining = Goal - Food Chartjs Dougnhut Chart
+              Calories Remaining
             </div>
             <div class="card-body">
               <canvas id="calorieChart"></canvas>
@@ -28,7 +23,7 @@
         </div>
         <div class="col-md-5">
           <div class="card mb-4">
-            <div class="card-header">Macros -> 1 Doughnut Charts</div>
+            <div class="card-header">Macronutrients</div>
             <div class="card-body">
               <canvas id="macroChart"></canvas>
             </div>
@@ -41,7 +36,7 @@
         <div class="col-md-1"></div>
         <div class="col-md-5">
           <div class="card mb-4">
-            <div class="card-header">Line Chart -> Weight - Last 30 days</div>
+            <div class="card-header">Weight</div>
             <div class="card-body">
               <canvas id="weightChart"></canvas>
             </div>
@@ -50,7 +45,7 @@
         <div class="col-md-5">
           <div class="card mb-4">
             <div class="card-header">
-              Steps (can be added just like food in the diary section)
+              Steps
             </div>
             <div class="card-body">
               <canvas id="exerciseChart"></canvas>
