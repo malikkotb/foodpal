@@ -234,7 +234,7 @@
       </button>
       <!-- carousel controls end-->
     </div>
-
+    
     <div class="container px-0" id="foodDiary">
       <div class="row">
         <div class="col-1">
@@ -284,6 +284,9 @@
                       ><br /><span class="subtext">Remaining</span>
                     </p>
                   </div>
+                </div>
+                <div class="progress mt-3 mb-1" style="height: 30px; background-color: aliceblue;">
+                  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" :aria-valuenow="progressBarValue" aria-valuemin="0" aria-valuemax="100" style="background-color: #3498db;" :style="{ width: progressBarWidth }">{{ progressBarValue }}%</div>
                 </div>
               </div>
 
@@ -941,7 +944,7 @@ export default {
         },
       },
       totalsChart: null,
-      totalsData: {},
+      totalsData: [300, 50, 100],
       totalsOptions: {},
     };
   },
@@ -990,6 +993,13 @@ export default {
     this.isUpdated = true;
   },
   computed: {
+    progressBarValue() {
+      const progress = Math.floor((this.currentCalories / this.userCalories)*100)
+      return progress;
+    },
+    progressBarWidth() {
+      return `${this.progressBarValue}%`;
+    },
     currentCalories() {
       if (this.firebaseData !== null) {
         let calTotal = 0;
@@ -1273,6 +1283,13 @@ export default {
         .catch((error) => {
           console.error(error);
         });
+
+      // update totalsChart
+      this.totalsData = [this.currentCarbs, this.currentFat, this.currentProtein];
+      this.totalsChart.destroy(); 
+      this.createTotalsChart();
+
+
     },
     updateActiveSlide(operation) {
       operation === "+" ? this.activeSlide++ : this.activeSlide--;
@@ -1588,7 +1605,7 @@ export default {
           labels: ["Carbohydrates", "Fat", "Protein"],
           datasets: [
             {
-              data: [300, 50, 100],
+              data: this.totalsData,
               // change data to: this.currentCarbs, this.currentFat, this.currentProtein
               backgroundColor: [
                 "#00B4BD", // carbs
@@ -1762,9 +1779,6 @@ p {
   margin-bottom: 0;
 }
 
-.container {
-  /* position: relative; */
-}
 
 .macroChartDiv {
   height: 150px;
