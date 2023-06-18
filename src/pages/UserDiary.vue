@@ -47,7 +47,7 @@
               </div>
             </div>
             <div class="mb-0 col-md-6 addFoodCol">
-              <div class="relative">
+              <div  class="relative" >
                 <canvas ref="myChart" class="mx-0" id="macrosChart"></canvas>
                 <div class="absolute-center text-center">
                   <p style="font-size: 1.2rem" v-if="selectedItem > -1">
@@ -108,8 +108,11 @@
                   />
                 </p>
               </div>
-              <h3 v-else class="text-center">Search for a food</h3>
+              <h3 v-else class="text-center">Select a food item.</h3>
             </div>
+            <!-- <div v-else class="mb-0 col-md-6 addFoodCol">
+              <p>yeag</p>
+            </div> -->
           </div>
         </div>
         <button
@@ -198,17 +201,12 @@
       style="background-color: #f8f9fa"
     >
       <div ref="carousel" class="carousel-inner">
-        <!-- <div class="carousel-item active">
-          <h5>Today 2. May 23</h5>
-          <p>Some representative placeholder content for the second slide.</p>
-        </div> -->
         <div
           v-for="(date, index) in dateList"
           :key="index"
           :class="{ 'carousel-item': true, active: index === activeSlide }"
         >
           <h5>{{ date }}</h5>
-          <!-- <h3>{{ index }}</h3> -->
         </div>
       </div>
       <!-- carousel controls -->
@@ -234,7 +232,7 @@
       </button>
       <!-- carousel controls end-->
     </div>
-    
+
     <div class="container px-0" id="foodDiary">
       <div class="row">
         <div class="col-1">
@@ -285,8 +283,21 @@
                     </p>
                   </div>
                 </div>
-                <div class="progress mt-3 mb-1" style="height: 30px; background-color: aliceblue;">
-                  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" :aria-valuenow="progressBarValue" aria-valuemin="0" aria-valuemax="100" style="background-color: #3498db;" :style="{ width: progressBarWidth }">{{ progressBarValue }}%</div>
+                <div
+                  class="progress mt-3 mb-1"
+                  style="height: 30px; background-color: aliceblue"
+                >
+                  <div
+                    class="progress-bar progress-bar-striped progress-bar-animated"
+                    role="progressbar"
+                    :aria-valuenow="progressBarValue"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    style="background-color: #3498db"
+                    :style="{ width: progressBarWidth }"
+                  >
+                    {{ progressBarValue }}%
+                  </div>
                 </div>
               </div>
 
@@ -546,7 +557,15 @@
 <script>
 import Chart from "chart.js/auto";
 import { markRaw } from "vue";
-import { getDatabase, ref, push, get, child, update, remove } from "firebase/database";
+import {
+  getDatabase,
+  ref,
+  push,
+  get,
+  child,
+  update,
+  remove,
+} from "firebase/database";
 
 export default {
   data() {
@@ -919,6 +938,7 @@ export default {
       ],
       firebaseData: null,
       macrosChart: null,
+      loadMacrosChart: false,
       chartData: {
         labels: ["Protein", "Carbohydrates", "Fat"],
         datasets: [
@@ -948,6 +968,14 @@ export default {
       totalsOptions: {},
     };
   },
+  watch: {
+    inputValue() {
+        this.foodSearchResults = [];
+        this.itemToAdd = null;
+        this.selectedItem = -1;
+        this.macrosChart.destroy();
+    },
+  },
   beforeUnmount() {
     if (this.macrosChart) {
       this.macrosChart.destroy();
@@ -976,8 +1004,6 @@ export default {
         console.error(error);
       });
 
-    this.firebaseData = this.getFoodFromFirebase();
-
     for (let i = 2; i < this.dateList.length; i++) {
       this.foodData.push({
         [this.dateList[i]]: {
@@ -988,13 +1014,27 @@ export default {
         },
       });
     }
+
+    // switch to todays' date
+    const today = new Date().toISOString().slice(0, 10);
+    // then add difference from 2nd May in days to todays' date, to this.activeSlide
+    const startDate = "2023-05-02"; // Another date in the same format
+    const date1 = new Date(today);
+    const date2 = new Date(startDate);
+    const diffInMilliseconds = Math.abs(date1 - date2);
+    const diffInDays = Math.ceil(diffInMilliseconds / (1000 * 60 * 60 * 24));
+    this.activeSlide += diffInDays;
+
+    this.firebaseData = this.getFoodFromFirebase();
   },
-  async updated() {
+  updated() {
     this.isUpdated = true;
   },
   computed: {
     progressBarValue() {
-      const progress = Math.floor((this.currentCalories / this.userCalories)*100)
+      const progress = Math.floor(
+        (this.currentCalories / this.userCalories) * 100
+      );
       return progress;
     },
     progressBarWidth() {
@@ -1109,6 +1149,9 @@ export default {
       };
     },
     filteredList() {
+      if (this.inputValue === "") {
+        return this.foodList;
+      }
       if (this.inputValue != "" && this.foodSearchResults != null) {
         return this.foodSearchResults;
         // return this.foodList.filter((item) =>
@@ -1226,7 +1269,6 @@ export default {
 
       this.closeMacroCard(); // close the card when deleting finished
       this.firebaseData = this.getFoodFromFirebase(); //call getFoodfromFirebase() again to refresh data
-
     },
     capitalizeLetter(string) {
       return string.charAt(0).toUpperCase() + string.slice(1);
@@ -1285,11 +1327,13 @@ export default {
         });
 
       // update totalsChart
-      this.totalsData = [this.currentCarbs, this.currentFat, this.currentProtein];
-      this.totalsChart.destroy(); 
+      this.totalsData = [
+        this.currentCarbs,
+        this.currentFat,
+        this.currentProtein,
+      ];
+      this.totalsChart.destroy();
       this.createTotalsChart();
-
-
     },
     updateActiveSlide(operation) {
       operation === "+" ? this.activeSlide++ : this.activeSlide--;
@@ -1432,18 +1476,19 @@ export default {
       document.body.style.overflow = "hidden"; // prevent scrolling
     },
     async fetchData() {
+      this.searchStatus = true;
       try {
         if (this.inputValue !== "") {
-          this.searchStatus = true;
           await this.fetchFoodData(this.inputValue); // input is query
-          this.searchStatus = false;
-          console.log("Food data fetched, global search results: ");
-          console.log(this.foodSearchResults);
+          // console.log("Food data fetched, global search results: ");
+          // console.log(this.foodSearchResults);
           // this.inputValue = "";
         }
       } catch (error) {
         console.error("Error fetching food data:", error);
       }
+      this.searchStatus = false;
+      this.loadMacrosChart = true;
     },
     closeCard() {
       // call the actual method, that adds a new item to the list
@@ -1537,9 +1582,12 @@ export default {
     selectItem(index) {
       this.selectedItem = index;
       if (this.foodSearchResults.length === 0) {
-        this.itemToAdd = this.foodList[index];
+        this.itemToAdd = this.foodList[index]; // default food list to select from
+
+
       } else {
         this.itemToAdd = this.foodSearchResults[index];
+        
       }
 
       if (this.macrosChart) {
@@ -1778,7 +1826,6 @@ p {
   font-size: 1rem;
   margin-bottom: 0;
 }
-
 
 .macroChartDiv {
   height: 150px;
