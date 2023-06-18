@@ -4,10 +4,10 @@ FoodPal is a Food Tracker app that allows you to keep a diary of the foods you e
 
 ## Features
 
-- **Food Diary**: Keep a record of the foods you eat each day, including details like meal times, portion sizes, and nutritional information.
+- **Food Diary**: Keep a record of the foods you eat each day, including details like meal times, portion sizes, and nutritional information. Add new food items by searching for any food. Connects to an API with thousands of food entries.  
 ![FoodPal Screenshot](./src/screenshots/foodpal_1.png)
 ![FoodPal Screenshot](./src/screenshots/foodpal_2.png)
-![FoodPal Screenshot](./src/screenshots/foodpal_3.png)
+<!-- ![FoodPal Screenshot](./src/screenshots/foodpal_3.png) -->
 ![FoodPal Screenshot](./src/screenshots/foodpal_4.png)
 
 - **Custom Goals**: Set personalized nutrition goals based on your dietary needs, such as calorie intake, macronutrient distribution, or specific nutrient targets.
