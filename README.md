@@ -2,7 +2,7 @@
 
 FoodPal is a Food Tracker app that allows you to keep a diary of the foods you eat every day. It helps you track your nutrition intake, set goals, and stay on top of your health and fitness journey. With FoodPal, you can easily monitor your food consumption, make informed dietary choices, and achieve your personal wellness goals.
 
-![FoodPal Screenshot](./screenshots/foodpal-screenshot.png)
+![FoodPal Screenshot](./screenshots/foodpal_1.png)
 
 ## Features
 
@@ -19,7 +19,7 @@ To run the FoodPal app locally, follow these steps:
 2. Navigate to the project directory: `cd foodpal`
 3. Install the dependencies: `npm install`
 4. Start the development server: `npm run serve`
-5. Open your browser and visit: `http://localhost:8080`
+5. Open your browser and visit: `http://localhost:8082`
 
 ## Technologies Used
 
