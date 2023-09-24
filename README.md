@@ -49,13 +49,3 @@ Please ensure that your code adheres to the existing code style and conventions 
 ## License
 
 FoodPal is open source and released under the [MIT License](https://opensource.org/licenses/MIT).
-
-## Contact
-
-If you have any questions, suggestions, or feedback, please feel free to reach out:
-
-- Author: [Your Name](https://github.com/your-username)
-- Email: your-email@example.com
-
-We hope you find FoodPal helpful in tracking your nutrition and achieving your health and fitness goals!
-
